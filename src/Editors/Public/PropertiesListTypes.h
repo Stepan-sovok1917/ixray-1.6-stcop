@@ -1,5 +1,7 @@
 #pragma once
 
+class UIPropertiesForm;
+
 #include "../../xrServerEntities/gametype_chooser.h"
 #include "WaveForm.h"
 

@@ -31,52 +31,75 @@
 #	pragma warning(push)
 #	pragma warning(disable:4995)
 #		include <luabind/luabind.hpp>
-#		include <shlwapi.h>
 #	pragma warning(pop)
 
-// #HACK: Definition copied from <shlwapi.h>
-LWSTDAPI_(int) StrCmpLogicalW(__in LPCWSTR psz1, __in LPCWSTR psz2);
-
-struct logical_string_predicate {
-	static HRESULT AnsiToUnicode						(const char* pszA, LPVOID buffer, u32 const& buffer_size)
+// Explorer-style ordering: a run of digits compares by its numeric value, so "cover2" sorts
+// before "cover10". The Win32 StrCmpLogicalW is not available outside Windows, and the ALife
+// tool lists depend on this order.
+namespace
+{
+	inline bool is_digit(char value)
 	{
-		VERIFY			(pszA);
-		VERIFY			(buffer);
-		VERIFY			(buffer_size);
-
-		u32				cCharacters =  xr_strlen(pszA)+1;
-		VERIFY			(cCharacters*2 <= buffer_size);
-
-		if (MultiByteToWideChar(CP_ACP, 0, pszA, cCharacters, (LPOLESTR)buffer, cCharacters))
-			return		(NOERROR);
-
-		return			(HRESULT_FROM_WIN32(GetLastError()));
+		return value >= '0' && value <= '9';
 	}
 
+	int compare_logical(const char* left, const char* right)
+	{
+		while (*left != 0 && *right != 0)
+		{
+			if (is_digit(*left) && is_digit(*right))
+			{
+				const char* leftEnd = left;
+				const char* rightEnd = right;
+				while (is_digit(*leftEnd)) ++leftEnd;
+				while (is_digit(*rightEnd)) ++rightEnd;
+
+				// Leading zeroes do not change the value, only the digit count matters.
+				const char* leftDigits = left;
+				const char* rightDigits = right;
+				while (leftDigits < leftEnd && *leftDigits == '0') ++leftDigits;
+				while (rightDigits < rightEnd && *rightDigits == '0') ++rightDigits;
+
+				const size_t leftLength = size_t(leftEnd - leftDigits);
+				const size_t rightLength = size_t(rightEnd - rightDigits);
+
+				if (leftLength != rightLength)
+					return leftLength < rightLength ? -1 : 1;
+
+				for (size_t i = 0; i < leftLength; ++i)
+				{
+					if (leftDigits[i] != rightDigits[i])
+						return leftDigits[i] < rightDigits[i] ? -1 : 1;
+				}
+
+				left = leftEnd;
+				right = rightEnd;
+				continue;
+			}
+
+			if (*left != *right)
+				return (unsigned char)*left < (unsigned char)*right ? -1 : 1;
+
+			++left;
+			++right;
+		}
+
+		if (*left == *right)
+			return 0;
+
+		return *left != 0 ? 1 : -1;
+	}
+}
+
+struct logical_string_predicate {
 	bool operator()			(const char* const& first, const char* const& second) const
 	{
-		u32				buffer_size0 = (xr_strlen(first) + 1)*2;
-		LPCWSTR			buffer0 = (LPCWSTR)_alloca(buffer_size0);
-		AnsiToUnicode	(first, (LPVOID)buffer0, buffer_size0);
-
-		u32				buffer_size1 = (xr_strlen(second) + 1)*2;
-		LPCWSTR			buffer1 = (LPCWSTR)_alloca(buffer_size1);
-		AnsiToUnicode	(second, (LPVOID)buffer1, buffer_size1);
-
-		return			(StrCmpLogicalW(buffer0, buffer1) < 0);
+		return			(compare_logical(first, second) < 0);
 	}
 
 	bool operator()			(shared_str const& first, shared_str const& second) const
 	{
-		u32				buffer_size0 = (first.size() + 1)*2;
-		LPCWSTR			buffer0 = (LPCWSTR)_alloca(buffer_size0);
-		AnsiToUnicode	(first.c_str(), (LPVOID)buffer0, buffer_size0);
-
-		u32				buffer_size1 = (second.size() + 1)*2;
-		LPCWSTR			buffer1 = (LPCWSTR)_alloca(buffer_size1);
-		AnsiToUnicode	(second.c_str(), (LPVOID)buffer1, buffer_size1);
-
-		return			(StrCmpLogicalW(buffer0, buffer1) < 0);
+		return			(compare_logical(first.c_str(), second.c_str()) < 0);
 	}
 }; // struct logical_string_predicate
 

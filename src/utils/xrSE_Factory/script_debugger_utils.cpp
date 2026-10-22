@@ -1,75 +1,95 @@
 #include "stdafx.h"
 
 #include "script_debugger_utils.h"
-/*
-#ifndef _WIN32
-#	include <sys/time.h>
-#	include <errno.h>
-#endif*/
 
-xr_event::xr_event(bool broadcast, bool signalled )
+#include <chrono>
+
+namespace
 {
-	m_event = CreateEvent(0, broadcast, signalled, 0);
+	// A steady clock that does not jump when the system time changes; the Win32 counterpart
+	// (GetTickCount64) has the same property.
+	const std::chrono::steady_clock::time_point g_start = std::chrono::steady_clock::now();
+}
+
+xr_event::xr_event(bool broadcast, bool signalled)
+	: m_broadcast(broadcast)
+	, m_signalled(signalled)
+{
 }
 
 xr_event::~xr_event()
 {
-	CloseHandle(m_event);
 }
 
 bool xr_event::signal()
 {
-	return SetEvent(m_event) != 0;
+	{
+		std::lock_guard<std::mutex> lock(m_mutex);
+		m_signalled = true;
+	}
+
+	// A manual-reset event wakes every waiter; an auto-reset one releases a single waiter.
+	if (m_broadcast)
+		m_condition.notify_all();
+	else
+		m_condition.notify_one();
+
+	return true;
 }
 
 bool xr_event::reset()
 {
-	return ResetEvent(m_event) != 0;
+	std::lock_guard<std::mutex> lock(m_mutex);
+	m_signalled = false;
+	return true;
 }
 
 xrEventWaitRes xr_event::wait()
 {
-	if (WaitForSingleObject(m_event, INFINITE) == WAIT_OBJECT_0)
-		return wrSignaled;
-	else
-		return wrError;
+	std::unique_lock<std::mutex> lock(m_mutex);
+	m_condition.wait(lock, [this] { return m_signalled; });
+
+	if (!m_broadcast)
+		m_signalled = false;
+
+	return wrSignaled;
 }
 
 xrEventWaitRes xr_event::wait(unsigned msec)
 {
-	DWORD res = WaitForSingleObject(m_event, msec);
-	if (res == WAIT_OBJECT_0)
-		return wrSignaled;
-	if (res == WAIT_TIMEOUT)
+	std::unique_lock<std::mutex> lock(m_mutex);
+	if (!m_condition.wait_for(lock, std::chrono::milliseconds(msec), [this] { return m_signalled; }))
 		return wrTimeOut;
-	return wrError;
+
+	if (!m_broadcast)
+		m_signalled = false;
+
+	return wrSignaled;
 }
 ////////////////////////////////////////////////////////////
 
 xr_mutex::xr_mutex()
 {
-	InitializeCriticalSection(&m_mutex);
 }
 
 xr_mutex::~xr_mutex()
 {
-	DeleteCriticalSection(&m_mutex);
 }
 
 bool xr_mutex::trylock()
 {
-	return TryEnterCriticalSection(&m_mutex) != 0;
+	return m_mutex.try_lock();
 }
 
 bool xr_mutex::lock()
 {
-	EnterCriticalSection(&m_mutex);
+	m_mutex.lock();
 	return true;
 }
 
 bool xr_mutex::unlock()
 {
-	LeaveCriticalSection(&m_mutex);
+	m_mutex.unlock();
 	return true;
 }
 
@@ -85,70 +105,59 @@ xr_sync::~xr_sync()
 }
 
 ////////////////////////////////////////////////////////////
-DWORD __stdcall xrThreadStart(void * th)
-{
-	((xr_thread*)th)->run();
-	return 0;
-}
 
 xr_thread::xr_thread()
-: m_thread(0)
-{}
+{
+}
 
 xr_thread::~xr_thread()
 {
-	if (m_thread) 
-		CloseHandle(m_thread);
+	if (m_thread.joinable())
+		m_thread.detach();
 }
 
 bool xr_thread::start()
 {
 	kill();
-	DWORD dwID;
-	m_thread = CreateThread(0, 0, &xrThreadStart, (void*)this, 0, &dwID);
-	return m_thread != 0;
+	m_thread = std::thread(&xr_thread::run, this);
+	return m_thread.joinable();
 }
 
 bool xr_thread::kill()
 {
-	if (!m_thread) return true;
+	if (!m_thread.joinable())
+		return true;
 
-	bool res = true;
-	if (WaitForSingleObject(m_thread, 0) != WAIT_OBJECT_0)
-		res = TerminateThread(m_thread, 0);
-	if (res)
-	{
-		CloseHandle(m_thread);
-		m_thread = 0;
-	}
-	return res != 0;
+	// There is no portable way to terminate a running thread. Nothing in the debugger force
+	// kills a live thread, so the handle is detached and the thread finishes on its own.
+	m_thread.detach();
+	return true;
 }
 
 bool xr_thread::join()
 {
-	return (WaitForSingleObject(m_thread, INFINITE) == WAIT_OBJECT_0);
+	if (!m_thread.joinable())
+		return false;
+
+	m_thread.join();
+	return true;
 }
 
 bool xr_thread::yield()
 {
-	Sleep(0);
+	std::this_thread::yield();
 	return true;
 }
 
 void xr_thread::sleep(unsigned msec)
 {
-	Sleep(msec);
+	std::this_thread::sleep_for(std::chrono::milliseconds(msec));
 }
-
-/*
-pid_t xr_thread::getId()
-{
-	return GetCurrentThreadId();
-}*/
 
 unsigned xr_thread::getTickCount()
 {
-	return GetTickCount64();
+	const auto elapsed = std::chrono::steady_clock::now() - g_start;
+	return static_cast<unsigned>(std::chrono::duration_cast<std::chrono::milliseconds>(elapsed).count());
 }
 
 

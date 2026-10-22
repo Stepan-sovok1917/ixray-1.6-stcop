@@ -1,5 +1,9 @@
 #pragma once
 
+#include <condition_variable>
+#include <mutex>
+#include <thread>
+
 enum xrEventWaitRes
 {
 	wrError,
@@ -18,7 +22,10 @@ public:
 	xrEventWaitRes	wait(unsigned msec);
 
 private:
-	HANDLE			m_event;
+	std::mutex				m_mutex;
+	std::condition_variable	m_condition;
+	bool					m_broadcast;
+	bool					m_signalled;
 
 private: //hidden
 	xr_event(const xr_event &);
@@ -35,7 +42,8 @@ public:
 	bool unlock();
 
 private:
-	CRITICAL_SECTION	m_mutex;
+	// A Win32 critical section is reentrant, and std::recursive_mutex keeps that property.
+	std::recursive_mutex	m_mutex;
 private: // hidden
 	xr_mutex(const xr_mutex &);
 	void operator = (const xr_mutex &);
@@ -73,7 +81,7 @@ public:
 	static unsigned getTickCount(); // msec
 
 private:
-	HANDLE		m_thread;
+	std::thread	m_thread;
 
 private: // hidden
 	xr_thread(const xr_thread &);

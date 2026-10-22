@@ -75,10 +75,13 @@ FACTORY_API void SEFactoryDestroy()
 	xr_delete(g_object_factory);
 }
 
+#if defined(_WIN32)
+// A DLL entry point only exists on Windows; other platforms load the library directly.
 BOOL APIENTRY DllMain(HANDLE, DWORD, LPVOID)
 {
 	return (true);
 }
+#endif
 
 void _destroy_item_data_vector_cont(T_VECTOR* vec)
 {

@@ -20,7 +20,6 @@
 #	pragma warning(push)
 #	pragma warning(disable:4995)
 #		include <luabind/luabind.hpp>
-#		include <shlwapi.h>
 #	pragma warning(pop)
 
 static SFillPropData			fp_data;
