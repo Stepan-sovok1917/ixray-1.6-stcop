@@ -1,7 +1,9 @@
-if (WIN32)
+option(IXRAY_CLANG_TIDY "Run clang-tidy static analysis" OFF)
+
+if (IXRAY_CLANG_TIDY AND WIN32)
     set(CMAKE_VS_GLOBALS "EnableClangTidyCodeAnalysis=true")
     set(CMAKE_CXX_CLANG_TIDY_EXPORT_FIXES_DIR "${CMAKE_BINARY_DIR}/clang-tidy")
-else()
+elseif (IXRAY_CLANG_TIDY)
     find_program(CLANG_TIDY_EXE clang-tidy)
 
     if(CLANG_TIDY_EXE)

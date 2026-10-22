@@ -8,7 +8,7 @@
 extern xr_token2* actions_token;
 extern xr_token2 actions_token_impl[];
 
-int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, char* pCmdLine, int nCmdShow)
+static int RunEditor(const char* pCmdLine)
 {
 	if (!SDL_Init(SDL_INIT_AUDIO | SDL_INIT_EVENTS))
 	{
@@ -35,7 +35,12 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, char* pCmdLin
 
 	splash::SetProgressStatus(10, "Initializing COM Library");
 
+#if defined(__APPLE__)
+	// No COM on macOS.
+	// CoInitialize is only needed by the Windows shell/DirectXTex path.
+#else
 	CoInitialize(nullptr);
+#endif
 
 	splash::SetProgressStatus(20, "Core Initialization");
 
@@ -152,4 +157,25 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, char* pCmdLin
 	xr_delete(MainForm);
 	Core._destroy();
 	return 0;
+}
+
+
+// The engine uses the same portable entry macro: WinMain on Windows, main elsewhere.
+int ENTRY_FUNCTION(ENTRY_ARGS)
+{
+#if defined(__APPLE__)
+	// WinMain passes the whole command line as one string; rebuild it from argv.
+	xr_string cmd;
+	for (int i = 1; i < argc; ++i)
+	{
+		if (i > 1) cmd += ' ';
+		cmd += argv[i];
+	}
+	return RunEditor(cmd.c_str());
+#else
+	(void)hInstance;
+	(void)hPrevInstance;
+	(void)nCmdShow;
+	return RunEditor(lpCmdLine);
+#endif
 }

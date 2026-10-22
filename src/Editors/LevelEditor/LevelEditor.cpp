@@ -33,7 +33,7 @@ void DragDrop(const xr_string&, int);
 static DialogEditor* g_DialogEditor = nullptr;
 static UIEditLibrary* g_ObjectLibrary = nullptr;
 
-int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, char* pCmdLine, int nCmdShow)
+static int RunEditor(const char* pCmdLine)
 {
 	bIsLevelEditor = true;
 
@@ -317,4 +317,25 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, char* pCmdLin
 
 	Core._destroy();
 	return 0;
+}
+
+
+// The engine uses the same portable entry macro: WinMain on Windows, main elsewhere.
+int ENTRY_FUNCTION(ENTRY_ARGS)
+{
+#if defined(__APPLE__)
+	// WinMain passes the whole command line as one string; rebuild it from argv.
+	xr_string cmd;
+	for (int i = 1; i < argc; ++i)
+	{
+		if (i > 1) cmd += ' ';
+		cmd += argv[i];
+	}
+	return RunEditor(cmd.c_str());
+#else
+	(void)hInstance;
+	(void)hPrevInstance;
+	(void)nCmdShow;
+	return RunEditor(lpCmdLine);
+#endif
 }
