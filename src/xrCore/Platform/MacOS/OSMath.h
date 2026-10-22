@@ -2,6 +2,8 @@
 #include <cmath>
 
 #ifndef XR_USE_NATIVE_D3D11
+#ifndef IXR_WIN32_RECT_DEFINED
+#define IXR_WIN32_RECT_DEFINED
 struct RECT
 {
     int left;
@@ -9,6 +11,7 @@ struct RECT
     int right;
     int bottom;
 };
+#endif
 #endif
 
 inline unsigned char _bittest64(std::int64_t *a, std::int64_t b)

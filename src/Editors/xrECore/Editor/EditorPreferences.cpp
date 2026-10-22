@@ -631,8 +631,9 @@ void CCustomPreferences::LoadConfig()
 	}
 	else
 	{
-		int DisplayX = GetSystemMetrics(SM_CXFULLSCREEN);
-		int DisplayY = GetSystemMetrics(SM_CYFULLSCREEN);
+		const SDL_DisplayMode* DesktopMode = SDL_GetCurrentDisplayMode(SDL_GetPrimaryDisplay());
+		int DisplayX = DesktopMode ? DesktopMode->w : 1280;
+		int DisplayY = DesktopMode ? DesktopMode->h : 720;
 
 		EDevice->Height = DisplayY;
 		EDevice->Width = DisplayX;

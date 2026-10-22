@@ -18,21 +18,21 @@
 
 // Defines the class methods for the link.
 #define DlinkMethods(classname,linkname)																		\
-	void linkname##Init ( void ) { linkname##pNextItem = NULL; linkname##pPrevItem = NULL; }					\
+	void linkname##Init ( void ) { linkname##pNextItem = nullptr; linkname##pPrevItem = nullptr; }					\
 	\
 	/* Find the next in the list. */																			\
 	classname *linkname##Next ( void )																			\
 	{																											\
-	VERIFY ( ( linkname##pPrevItem == NULL ) || ( linkname##pPrevItem->linkname##pNextItem == this ) );		\
-	VERIFY ( ( linkname##pNextItem == NULL ) || ( linkname##pNextItem->linkname##pPrevItem == this ) );		\
+	VERIFY ( ( linkname##pPrevItem == nullptr ) || ( linkname##pPrevItem->linkname##pNextItem == this ) );		\
+	VERIFY ( ( linkname##pNextItem == nullptr ) || ( linkname##pNextItem->linkname##pPrevItem == this ) );		\
 	return linkname##pNextItem;																				\
 	}																											\
 	\
 	/* Find the previous in the list. */																		\
 	classname *linkname##Prev ( void )																			\
 	{																											\
-	VERIFY ( ( linkname##pPrevItem == NULL ) || ( linkname##pPrevItem->linkname##pNextItem == this ) );		\
-	VERIFY ( ( linkname##pNextItem == NULL ) || ( linkname##pNextItem->linkname##pPrevItem == this ) );		\
+	VERIFY ( ( linkname##pPrevItem == nullptr ) || ( linkname##pPrevItem->linkname##pNextItem == this ) );		\
+	VERIFY ( ( linkname##pNextItem == nullptr ) || ( linkname##pNextItem->linkname##pPrevItem == this ) );		\
 	return linkname##pPrevItem;																				\
 	}																											\
 	\
@@ -42,18 +42,18 @@
 	{																											\
 	classname *pNext = linkname##pNextItem;																	\
 	classname *pPrev = linkname##pPrevItem;																	\
-	VERIFY ( ( pPrev == NULL ) || ( pPrev->linkname##pNextItem == this ) );									\
-	VERIFY ( ( pNext == NULL ) || ( pNext->linkname##pPrevItem == this ) );									\
-	if ( pPrev != NULL )																					\
+	VERIFY ( ( pPrev == nullptr ) || ( pPrev->linkname##pNextItem == this ) );									\
+	VERIFY ( ( pNext == nullptr ) || ( pNext->linkname##pPrevItem == this ) );									\
+	if ( pPrev != nullptr )																					\
 		{																										\
 		pPrev->linkname##pNextItem = pNext;																	\
 		}																										\
-		if ( pNext != NULL )																					\
+		if ( pNext != nullptr )																					\
 		{																										\
 		pNext->linkname##pPrevItem = pPrev;																	\
 		}																										\
-		linkname##pNextItem = NULL;																				\
-		linkname##pPrevItem = NULL;																				\
+		linkname##pNextItem = nullptr;																				\
+		linkname##pPrevItem = nullptr;																				\
 		return pNext;																							\
 	}																											\
 	\
@@ -62,15 +62,15 @@
 	/* Returns the next item. */																				\
 	classname *linkname##DelScan ( void )																		\
 	{																											\
-	VERIFY ( linkname##pPrevItem == NULL );																	\
+	VERIFY ( linkname##pPrevItem == nullptr );																	\
 	classname *pNext = linkname##pNextItem;																	\
-	VERIFY ( ( pNext == NULL ) || ( pNext->linkname##pPrevItem == this ) );									\
-	if ( pNext != NULL )																					\
+	VERIFY ( ( pNext == nullptr ) || ( pNext->linkname##pPrevItem == this ) );									\
+	if ( pNext != nullptr )																					\
 		{																										\
-		pNext->linkname##pPrevItem = NULL;																	\
+		pNext->linkname##pPrevItem = nullptr;																	\
 		}																										\
-		linkname##pNextItem = NULL;																				\
-		linkname##pPrevItem = NULL;																				\
+		linkname##pNextItem = nullptr;																				\
+		linkname##pPrevItem = nullptr;																				\
 		return pNext;																							\
 	}																											\
 	\
@@ -80,11 +80,11 @@
 	/* Use like   pThing->DelFromFirst ( &pFirst ); */															\
 	classname *linkname##DelFromFirst ( classname **ppFirst )													\
 	{																											\
-	VERIFY ( ppFirst != NULL );																				\
-	VERIFY ( *ppFirst != NULL );																			\
+	VERIFY ( ppFirst != nullptr );																				\
+	VERIFY ( *ppFirst != nullptr );																			\
 	if ( *ppFirst == this )																					\
 		{																										\
-		VERIFY ( linkname##pPrevItem == NULL );																\
+		VERIFY ( linkname##pPrevItem == nullptr );																\
 		/* First in the list. */																			\
 		*ppFirst = linkname##Del();																			\
 		return *ppFirst;																					\
@@ -100,12 +100,12 @@
 	/* Return the new next item. */																				\
 	classname *linkname##AddAfter ( classname *pPrev )															\
 	{																											\
-	VERIFY ( linkname##pNextItem == NULL );																	\
-	VERIFY ( linkname##pPrevItem == NULL );																	\
-	VERIFY ( pPrev != NULL );																				\
+	VERIFY ( linkname##pNextItem == nullptr );																	\
+	VERIFY ( linkname##pPrevItem == nullptr );																	\
+	VERIFY ( pPrev != nullptr );																				\
 	linkname##pNextItem = pPrev->linkname##pNextItem;														\
 	linkname##pPrevItem = pPrev;																			\
-	if ( linkname##pNextItem != NULL )																		\
+	if ( linkname##pNextItem != nullptr )																		\
 		{																										\
 		linkname##pNextItem->linkname##pPrevItem = this;													\
 		}																										\
@@ -117,11 +117,11 @@
 	/* Assumes this is the last item in the list for speed (asserted) */										\
 	void linkname##AddAfterEnd ( classname *pPrev )																\
 	{																											\
-	VERIFY ( linkname##pNextItem == NULL );																	\
-	VERIFY ( linkname##pPrevItem == NULL );																	\
-	VERIFY ( pPrev != NULL );																				\
-	VERIFY ( pPrev->linkname##pNextItem == NULL );															\
-	linkname##pNextItem = NULL;																				\
+	VERIFY ( linkname##pNextItem == nullptr );																	\
+	VERIFY ( linkname##pPrevItem == nullptr );																	\
+	VERIFY ( pPrev != nullptr );																				\
+	VERIFY ( pPrev->linkname##pNextItem == nullptr );															\
+	linkname##pNextItem = nullptr;																				\
 	linkname##pPrevItem = pPrev;																			\
 	pPrev->linkname##pNextItem = this;																		\
 	}																											\
@@ -130,12 +130,12 @@
 	/* Returns the new previous item. */																		\
 	classname *linkname##AddBefore ( classname *pNext )															\
 	{																											\
-	VERIFY ( linkname##pNextItem == NULL );																	\
-	VERIFY ( linkname##pPrevItem == NULL );																	\
-	VERIFY ( pNext != NULL );																				\
+	VERIFY ( linkname##pNextItem == nullptr );																	\
+	VERIFY ( linkname##pPrevItem == nullptr );																	\
+	VERIFY ( pNext != nullptr );																				\
 	linkname##pNextItem = pNext;																			\
 	linkname##pPrevItem = pNext->linkname##pPrevItem;														\
-	if ( linkname##pPrevItem != NULL )																		\
+	if ( linkname##pPrevItem != nullptr )																		\
 		{																										\
 		linkname##pPrevItem->linkname##pNextItem = this;													\
 		}																										\
@@ -147,11 +147,11 @@
 	/* Assumes this is the first item in the list for speed (asserted) */										\
 	void linkname##AddBeforeStart ( classname *pNext )															\
 	{																											\
-	VERIFY ( linkname##pNextItem == NULL );																	\
-	VERIFY ( linkname##pPrevItem == NULL );																	\
-	VERIFY ( pNext != NULL );																				\
-	VERIFY ( pNext->linkname##pPrevItem == NULL );															\
-	linkname##pPrevItem = NULL;																				\
+	VERIFY ( linkname##pNextItem == nullptr );																	\
+	VERIFY ( linkname##pPrevItem == nullptr );																	\
+	VERIFY ( pNext != nullptr );																				\
+	VERIFY ( pNext->linkname##pPrevItem == nullptr );															\
+	linkname##pPrevItem = nullptr;																				\
 	linkname##pNextItem = pNext;																			\
 	pNext->linkname##pPrevItem = this;																		\
 	}																											\
@@ -160,11 +160,11 @@
 	classname *linkname##FindLast ( void )																		\
 	{																											\
 	classname *pCurr = this;																				\
-	VERIFY ( pCurr != NULL );																				\
-	while ( pCurr->linkname##pNextItem != NULL )															\
+	VERIFY ( pCurr != nullptr );																				\
+	while ( pCurr->linkname##pNextItem != nullptr )															\
 		{																										\
-		VERIFY ( ( pCurr->linkname##pPrevItem == NULL ) || ( pCurr->linkname##pPrevItem->linkname##pNextItem == pCurr ) );	\
-		VERIFY ( ( pCurr->linkname##pNextItem == NULL ) || ( pCurr->linkname##pNextItem->linkname##pPrevItem == pCurr ) );	\
+		VERIFY ( ( pCurr->linkname##pPrevItem == nullptr ) || ( pCurr->linkname##pPrevItem->linkname##pNextItem == pCurr ) );	\
+		VERIFY ( ( pCurr->linkname##pNextItem == nullptr ) || ( pCurr->linkname##pNextItem->linkname##pPrevItem == pCurr ) );	\
 		pCurr = pCurr->linkname##pNextItem;																	\
 		}																										\
 		return pCurr;																							\
@@ -174,11 +174,11 @@
 	classname *linkname##FindFirst ( void )																		\
 	{																											\
 	classname *pCurr = this;																				\
-	VERIFY ( pCurr != NULL );																				\
-	while ( pCurr->linkname##pPrevItem != NULL )															\
+	VERIFY ( pCurr != nullptr );																				\
+	while ( pCurr->linkname##pPrevItem != nullptr )															\
 		{																										\
-		VERIFY ( ( pCurr->linkname##pPrevItem == NULL ) || ( pCurr->linkname##pPrevItem->linkname##pNextItem == pCurr ) );	\
-		VERIFY ( ( pCurr->linkname##pNextItem == NULL ) || ( pCurr->linkname##pNextItem->linkname##pPrevItem == pCurr ) );	\
+		VERIFY ( ( pCurr->linkname##pPrevItem == nullptr ) || ( pCurr->linkname##pPrevItem->linkname##pNextItem == pCurr ) );	\
+		VERIFY ( ( pCurr->linkname##pNextItem == nullptr ) || ( pCurr->linkname##pNextItem->linkname##pPrevItem == pCurr ) );	\
 		pCurr = pCurr->linkname##pPrevItem;																	\
 		}																										\
 		return pCurr;																							\
@@ -189,54 +189,54 @@
 	{																											\
 	classname *pCurr = this;																						\
 	/* Scan backwards. */																					\
-	VERIFY ( pCurr != NULL );																				\
-	while ( pCurr->linkname##pPrevItem != NULL )															\
+	VERIFY ( pCurr != nullptr );																				\
+	while ( pCurr->linkname##pPrevItem != nullptr )															\
 		{																										\
-		VERIFY ( ( pCurr->linkname##pPrevItem == NULL ) || ( pCurr->linkname##pPrevItem->linkname##pNextItem == pCurr ) );				\
-		VERIFY ( ( pCurr->linkname##pNextItem == NULL ) || ( pCurr->linkname##pNextItem->linkname##pPrevItem == pCurr ) );				\
+		VERIFY ( ( pCurr->linkname##pPrevItem == nullptr ) || ( pCurr->linkname##pPrevItem->linkname##pNextItem == pCurr ) );				\
+		VERIFY ( ( pCurr->linkname##pNextItem == nullptr ) || ( pCurr->linkname##pNextItem->linkname##pPrevItem == pCurr ) );				\
 		pCurr = pCurr->linkname##pPrevItem;																	\
 		}																										\
-		VERIFY ( ( pCurr->linkname##pPrevItem == NULL ) || ( pCurr->linkname##pPrevItem->linkname##pNextItem == pCurr ) );					\
-		VERIFY ( ( pCurr->linkname##pNextItem == NULL ) || ( pCurr->linkname##pNextItem->linkname##pPrevItem == pCurr ) );					\
+		VERIFY ( ( pCurr->linkname##pPrevItem == nullptr ) || ( pCurr->linkname##pPrevItem->linkname##pNextItem == pCurr ) );					\
+		VERIFY ( ( pCurr->linkname##pNextItem == nullptr ) || ( pCurr->linkname##pNextItem->linkname##pPrevItem == pCurr ) );					\
 		\
 		/* Scan forwards. */																					\
 		pCurr = this;																							\
-		VERIFY ( pCurr != NULL );																				\
-		while ( pCurr->linkname##pNextItem != NULL )															\
+		VERIFY ( pCurr != nullptr );																				\
+		while ( pCurr->linkname##pNextItem != nullptr )															\
 		{																										\
-		VERIFY ( ( pCurr->linkname##pPrevItem == NULL ) || ( pCurr->linkname##pPrevItem->linkname##pNextItem == pCurr ) );				\
-		VERIFY ( ( pCurr->linkname##pNextItem == NULL ) || ( pCurr->linkname##pNextItem->linkname##pPrevItem == pCurr ) );				\
+		VERIFY ( ( pCurr->linkname##pPrevItem == nullptr ) || ( pCurr->linkname##pPrevItem->linkname##pNextItem == pCurr ) );				\
+		VERIFY ( ( pCurr->linkname##pNextItem == nullptr ) || ( pCurr->linkname##pNextItem->linkname##pPrevItem == pCurr ) );				\
 		pCurr = pCurr->linkname##pNextItem;																	\
 		}																										\
-		VERIFY ( ( pCurr->linkname##pPrevItem == NULL ) || ( pCurr->linkname##pPrevItem->linkname##pNextItem == pCurr ) );					\
-		VERIFY ( ( pCurr->linkname##pNextItem == NULL ) || ( pCurr->linkname##pNextItem->linkname##pPrevItem == pCurr ) );					\
+		VERIFY ( ( pCurr->linkname##pPrevItem == nullptr ) || ( pCurr->linkname##pPrevItem->linkname##pNextItem == pCurr ) );					\
+		VERIFY ( ( pCurr->linkname##pNextItem == nullptr ) || ( pCurr->linkname##pNextItem->linkname##pPrevItem == pCurr ) );					\
 	}																											\
 	\
 	/* Adds the item to the end of this list */																	\
 	void linkname##AddToEnd ( classname *pItem )																\
 	{																											\
-	VERIFY ( pItem != NULL );																				\
+	VERIFY ( pItem != nullptr );																				\
 	linkname##AddAfterEnd ( pItem->linkname##FindLast() );													\
 	}																											\
 	\
 	/* Adds the item the the start of this list */																\
 	void linkname##AddToStart ( classname *pItem )																\
 	{																											\
-	VERIFY ( pItem != NULL );																				\
+	VERIFY ( pItem != nullptr );																				\
 	linkname##AddBeforeStart ( pItem->linkname##FindFirst() );												\
 	}																											\
 	\
-	/* Check that all the pointer are NULL, ready to be deleted */												\
+	/* Check that all the pointer are nullptr, ready to be deleted */												\
 	bool linkname##CheckNull ( void )																			\
 	{																											\
-	return ( ( linkname##pNextItem == NULL ) && ( linkname##pPrevItem == NULL ) );							\
+	return ( ( linkname##pNextItem == nullptr ) && ( linkname##pPrevItem == nullptr ) );							\
 	}																											\
 	\
 	/* Calls delete() on all the objects in this list and deletes it */											\
 	void linkname##DelWholeList ( void )																		\
 	{																											\
 	classname *pCur = linkname##FindFirst();																\
-	while ( pCur != NULL )																					\
+	while ( pCur != nullptr )																					\
 		{																										\
 		classname *pNext = pCur->linkname##DelScan();														\
 		delete ( pCur );																					\

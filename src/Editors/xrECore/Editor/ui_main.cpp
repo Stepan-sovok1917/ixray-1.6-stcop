@@ -127,8 +127,9 @@ TUI::TUI()
 	m_bHintShowing = false;
 	m_LastHint = "";
 
-	int DisplayX = GetSystemMetrics(SM_CXFULLSCREEN);
-	int DisplayY = GetSystemMetrics(SM_CYFULLSCREEN);
+	const SDL_DisplayMode* DesktopMode = SDL_GetCurrentDisplayMode(SDL_GetPrimaryDisplay());
+	int DisplayX = DesktopMode ? DesktopMode->w : 1280;
+	int DisplayY = DesktopMode ? DesktopMode->h : 720;
 
 	Viewport& MainView = Views[0];
 	ViewID = 0;
@@ -312,7 +313,7 @@ void TUI::MousePress(TShiftState Shift, int X, int Y)
 			{
 				if (Tools->HiddenMode())
 				{
-					ShowCursor(false);
+					SDL_HideCursor();
 				}
 				m_MouseCaptured = true;
 			}
@@ -353,8 +354,8 @@ void TUI::MouseRelease(TShiftState Shift, int X, int Y)
 			{
 				if (bIsHiddenMode)
 				{
-					SetCursorPos(m_StartCpH.x, m_StartCpH.y);
-					ShowCursor(true);
+					SDL_WarpMouseInWindow(g_AppInfo.Window, (float)m_StartCpH.x, (float)m_StartCpH.y);
+					SDL_ShowCursor();
 				}
 				m_MouseCaptured = false;
 			}
@@ -477,7 +478,10 @@ void TUI::HideHint()
 void TUI::ShowHint()
 {
 	VERIFY(m_bReady);
-	GetCursorPos(&m_HintPoint);
+	float HintX = 0.0f, HintY = 0.0f;
+	SDL_GetGlobalMouseState(&HintX, &HintY);
+	m_HintPoint.x = (LONG)HintX;
+	m_HintPoint.y = (LONG)HintY;
 	AStringVec SS;
 	Tools->OnShowHint(SS);
 
@@ -772,22 +776,8 @@ bool TUI::Idle()
 {
 	VERIFY(m_bReady);
 
-	MSG msg;
-	do
-	{
-		ZeroMemory(&msg, sizeof(msg));
-		if (::PeekMessage(&msg, nullptr, 0U, 0U, PM_REMOVE))
-		{
-			::TranslateMessage(&msg);
-			::DispatchMessage(&msg);
-			if (msg.message == WM_QUIT)
-			{
-				Quit();
-			}
-			continue;
-		}
-
-	} while (msg.message);
+	// Window events are pumped by the editor's own SDL loop on every platform, so there is
+	// no Win32 message queue to drain here.
 
 	if (m_Flags.is(flResetUI))
 	{

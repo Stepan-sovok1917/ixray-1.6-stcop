@@ -7,6 +7,7 @@
 // the license agreement http://www.magic-software.com/License/WildMagic.pdf
 // and may not be copied or disclosed except in accordance with the terms of
 // that agreement.
+#include <chrono>
 #include "stdafx.h"
 
 
@@ -39,11 +40,9 @@ unsigned int Wml::System::MakeRGBA (unsigned char ucR, unsigned char ucG,
 //----------------------------------------------------------------------------
 double Wml::System::GetTime ()
 {
-    // 64-bit quantities
-    LARGE_INTEGER iFrequency, iCounter;
-
-    QueryPerformanceFrequency(&iFrequency);
-    QueryPerformanceCounter(&iCounter);
-    return ((double)iCounter.QuadPart)/((double)iFrequency.QuadPart);
+    // A steady wall clock; the Win32 performance counters are not portable.
+    using Clock = std::chrono::steady_clock;
+    static const Clock::time_point Start = Clock::now();
+    return std::chrono::duration<double>(Clock::now() - Start).count();
 }
 //----------------------------------------------------------------------------

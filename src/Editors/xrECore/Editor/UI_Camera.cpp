@@ -247,7 +247,7 @@ bool CUI_Camera::MoveStart(TShiftState Shift)
     const bool bTest = Shift&ssShift;
     if (bTest && !m_bMoving)
     {
-        ShowCursor(false);
+        SDL_HideCursor();
         EContext.UI->IR_GetMousePosReal(m_StartPos);
         m_bMoving = true;
     }
@@ -262,7 +262,7 @@ bool CUI_Camera::MoveEnd(TShiftState Shift)
     if (!(Shift & ssLeft) || !(Shift & ssShift))
     {
         SDL_WarpMouseInWindow(EContext.UI->CurrentView().WndHandle, m_StartPos.x, m_StartPos.y);
-        ShowCursor(true);
+        SDL_ShowCursor();
         m_bMoving = false;
         return true;
     }

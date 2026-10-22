@@ -28,8 +28,8 @@ target_precompile_headers(xrEUI PRIVATE "stdafx.h")
 
 # Project defines
 target_compile_definitions(xrEUI PRIVATE XREUI_EXPORTS)
-target_compile_definitions(xrEUI PRIVATE _WINDOWS)
-target_compile_definitions(xrEUI PRIVATE _USRDLL)
+
+
 target_compile_definitions(xrEUI PUBLIC XR_EDITOR_NEW)
 
 target_compile_definitions(xrEUI PRIVATE "$<$<CONFIG:Debug>:DEBUG>")
@@ -43,3 +43,8 @@ set_target_properties(xrEUI PROPERTIES DISABLE_PRECOMPILE_HEADERS ON)
 
 file(GLOB_RECURSE EUI_SOURCE_PCH_FILES "stdafx.*")
 source_group("pch" FILES ${EUI_SOURCE_PCH_FILES})
+
+# The editor GUI builds are Windows-only code paths; other platforms use the portable ones.
+if (WIN32)
+    target_compile_definitions(xrEUI PRIVATE _WINDOWS _USRDLL)
+endif()

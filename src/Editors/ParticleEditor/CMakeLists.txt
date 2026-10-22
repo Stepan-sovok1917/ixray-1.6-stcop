@@ -23,12 +23,14 @@ target_precompile_headers(ParticlesEditor PRIVATE "stdafx.h")
 
 # Project defines
 target_compile_definitions(ParticlesEditor PRIVATE _PARTICLE_EDITOR)
-target_compile_definitions(ParticlesEditor PRIVATE _WINDOWS)
-target_compile_definitions(ParticlesEditor PRIVATE _USRDLL)
+
+
 target_compile_definitions(ParticlesEditor PUBLIC XR_EDITOR_NEW)
 
-add_compile_options(/fp:fast)
-target_compile_options(ParticlesEditor PRIVATE /W0)
+if (MSVC)
+    add_compile_options(/fp:fast)
+endif()
+ixray_silence_warnings(ParticlesEditor)
 target_compile_definitions(ParticlesEditor PRIVATE "$<$<CONFIG:Debug>:DEBUG>")
 
 # Linker list
@@ -43,3 +45,7 @@ set_target_properties(ParticlesEditor PROPERTIES DISABLE_PRECOMPILE_HEADERS ON)
 file(GLOB_RECURSE EPE_SOURCE_PCH_FILES "stdafx.*")
 source_group("pch" FILES ${EPE_SOURCE_PCH_FILES})
 
+# The editor GUI builds are Windows-only code paths; other platforms use the portable ones.
+if (WIN32)
+    target_compile_definitions(ParticlesEditor PRIVATE _WINDOWS _USRDLL)
+endif()

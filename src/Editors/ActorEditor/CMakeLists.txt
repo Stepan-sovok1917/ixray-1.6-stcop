@@ -39,7 +39,7 @@ target_compile_definitions(ActorEditor PRIVATE _ACTOR_EDITOR)
 target_compile_definitions(ActorEditor PUBLIC XR_EDITOR_NEW)
 target_compile_definitions(ActorEditor PRIVATE _PP_EDITOR_)
 
-target_compile_options(ActorEditor PRIVATE /W0)
+ixray_silence_warnings(ActorEditor)
 target_compile_definitions(ActorEditor PRIVATE "$<$<CONFIG:Debug>:DEBUG>")
 
 # Linker list

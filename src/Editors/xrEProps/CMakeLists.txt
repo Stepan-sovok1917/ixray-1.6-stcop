@@ -34,7 +34,7 @@ target_precompile_headers(xrEProps PRIVATE "stdafx.h")
 
 # Project defines
 target_compile_definitions(xrEProps PRIVATE XREPROPS_EXPORTS)
-target_compile_definitions(xrEProps PRIVATE _WINDOWS)
+
 target_compile_definitions(xrEProps PRIVATE _EDITOR)
 target_compile_definitions(xrEProps PUBLIC XR_EDITOR_NEW)
 
@@ -49,3 +49,8 @@ set_target_properties(xrEProps PROPERTIES DISABLE_PRECOMPILE_HEADERS ON)
 
 file(GLOB_RECURSE EPROPS_SOURCE_PCH_FILES "stdafx.*")
 source_group("pch" FILES ${EPROPS_SOURCE_PCH_FILES})
+
+# The editor GUI builds are Windows-only code paths; other platforms use the portable ones.
+if (WIN32)
+    target_compile_definitions(xrEProps PRIVATE _WINDOWS)
+endif()

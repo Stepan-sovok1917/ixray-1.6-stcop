@@ -49,7 +49,7 @@ target_precompile_headers(LevelEditor PRIVATE "stdafx.h")
 # Project defines
 target_compile_definitions(LevelEditor PRIVATE _LEVEL_EDITOR)
 
-target_compile_options(LevelEditor PRIVATE /W0)
+ixray_silence_warnings(LevelEditor)
 target_compile_definitions(LevelEditor PRIVATE "$<$<CONFIG:Debug>:DEBUG>")
 
 # Linker list

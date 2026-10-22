@@ -99,3 +99,13 @@ function(target_validate_pch target target_path)
     
     source_group("pch" FILES ${CORE_SOURCE_PCH_FILES})
 endfunction()
+
+# The editor and tool sources are legacy and were compiled with /W0 on MSVC; clang gets the
+# equivalent here so the call sites stay one line each.
+function(ixray_silence_warnings target)
+    if (MSVC)
+        target_compile_options(${target} PRIVATE /W0)
+    else()
+        target_compile_options(${target} PRIVATE -w)
+    endif()
+endfunction()

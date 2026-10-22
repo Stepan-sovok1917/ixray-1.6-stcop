@@ -255,7 +255,7 @@ ECORE_API void IXEndMainMenuBar()
 
 		if (ImGui::ImageButton("##IXEndMainMenuBar01", EContext.UI->m_WinMin->get_SRView()->GetRawSRV(), ImageSize))
 		{
-			SendMessageW(EDevice->GetHWND(), WM_SYSCOMMAND, SC_MINIMIZE, 0);
+			SDL_MinimizeWindow(g_AppInfo.Window);
 		}
 
 		ImGui::SameLine();
@@ -271,7 +271,11 @@ ECORE_API void IXEndMainMenuBar()
 
 		if (ImGui::ImageButton("##IXEndMainMenuBar03", EContext.UI->m_WinClose->get_SRView()->GetRawSRV(), ImageSize))
 		{
-			SendMessageW(EDevice->GetHWND(), WM_CLOSE, 0, 0);
+			// Ask the main loop to close the window the same way the system close button does.
+			SDL_Event CloseEvent{};
+			CloseEvent.type = SDL_EVENT_WINDOW_CLOSE_REQUESTED;
+			CloseEvent.window.windowID = SDL_GetWindowID(g_AppInfo.Window);
+			SDL_PushEvent(&CloseEvent);
 		}
 
 		ImGui::PopStyleColor(2);
@@ -284,19 +288,22 @@ ECORE_API void IXEndMainMenuBar()
 		{
 			if (!MoveWin && EDevice->isZoomed)
 			{
-				SendMessageW(EDevice->GetHWND(), WM_SYSCOMMAND, SC_RESTORE, 0);
+				SDL_RestoreWindow(g_AppInfo.Window);
 			}
 			else
 			{
-				SendMessageW(EDevice->GetHWND(), WM_SYSCOMMAND, SC_MAXIMIZE, 0);
+				SDL_MaximizeWindow(g_AppInfo.Window);
 			}
 		}
 
+#if defined(IXR_WINDOWS)
+		// Only the borderless Windows frame needs a manual drag; elsewhere the system title bar does it.
 		if (MoveWin)
 		{
 			ReleaseCapture();
 			SendMessageW(EDevice->GetHWND(), 0xA1, 0x2, 0);
 		}
+#endif
 
 		ImGui::PopStyleVar();
 

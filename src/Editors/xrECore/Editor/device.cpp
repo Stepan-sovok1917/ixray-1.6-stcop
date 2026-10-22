@@ -412,30 +412,24 @@ void CEditorRenderDevice::Reset(IReader* F, bool bKeepTextures)
 
 void CEditorRenderDevice::MaximizedWindow()
 {
-	auto hwnd = GetHWND();
-	if (EDevice->isZoomed) {
+	if (EDevice->isZoomed)
+	{
 		ResoreWindow(false);
 		return;
 	}
 
 	EDevice->isZoomed = true;
 
-	SendMessage(hwnd, WM_SYSCOMMAND, SC_MAXIMIZE, 0);
+	// SDL forwards this to the platform's own maximize command on every OS.
+	SDL_MaximizeWindow(g_AppInfo.Window);
 }
 
 void CEditorRenderDevice::ResoreWindow(bool moving)
 {
-	SendMessageW(GetHWND(), WM_SYSCOMMAND, SC_RESTORE, 0);
+	(void)moving;
 
-	WINDOWPLACEMENT wp{};
-	wp.length = sizeof(wp);
+	SDL_RestoreWindow(g_AppInfo.Window);
 
-	if (GetWindowPlacement(GetHWND(), &wp)) //analog EDevice->NormalWinSizeSaved
-	{
-		RECT r = wp.rcNormalPosition;
-		MoveWindow(GetHWND(), r.left, r.top, r.right - r.left, r.bottom - r.top, true);
-	}
-	
 	EDevice->isZoomed = false;
 }
 
@@ -565,7 +559,8 @@ void CEditorRenderDevice::InitWindowStyle()
 {
 	EContext.UI->InitWindowIcons();
 
-#if _WINDOWS
+#if defined(IXR_WINDOWS)
+	// Windows draws its own frame so the editor can keep the custom title bar.
 	SDL_SetWindowBordered(g_AppInfo.Window, false);
 
 	win_chezze_layer(GetHWND());
@@ -574,8 +569,8 @@ void CEditorRenderDevice::InitWindowStyle()
 	SetFocus(EDevice->GetHWND());
 	SetForegroundWindow(EDevice->GetHWND());
 #else
-	SDL_SetWindowResizable(g_AppInfo.Window, SDL_TRUE);
-	SDL_SetWindowHitTest(g_AppInfo.Window, HitTestCallback, 0);
+	// Elsewhere the system frame is used as is: it is resizable and has native decorations.
+	SDL_SetWindowResizable(g_AppInfo.Window, true);
 #endif
 }
 
@@ -608,13 +603,13 @@ HWND CEditorRenderDevice::GetHWND() const
 
 void CEditorRenderDevice::CreateWindow()
 {
-	int DisplayX = GetSystemMetrics(SM_CXFULLSCREEN);
-	int DisplayY = GetSystemMetrics(SM_CYFULLSCREEN);
+	const SDL_DisplayMode* DesktopMode = SDL_GetCurrentDisplayMode(SDL_GetPrimaryDisplay());
+	int DisplayX = DesktopMode ? DesktopMode->w : 1280;
+	int DisplayY = DesktopMode ? DesktopMode->h : 720;
 
 	g_AppInfo.Window = SDL_CreateWindow("IX-Ray Editor", DisplayX, DisplayY, SDL_WINDOW_HIDDEN | SDL_WINDOW_RESIZABLE);
-#if _WINDOWS
-	SetForegroundWindow(EDevice->GetHWND());
-#endif
+	SDL_ShowWindow(g_AppInfo.Window);
+	SDL_RaiseWindow(g_AppInfo.Window);
 }
 
 void CEditorRenderDevice::DestryWindow()

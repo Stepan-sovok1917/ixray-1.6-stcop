@@ -18,6 +18,7 @@ else()
     if(PkgConfig_FOUND)
         pkg_check_modules(VORBIS QUIET IMPORTED_TARGET vorbis)
         pkg_check_modules(VORBISFILE QUIET IMPORTED_TARGET vorbisfile)
+        pkg_check_modules(VORBISENC QUIET IMPORTED_TARGET vorbisenc)
     endif()
 
     if(VORBIS_FOUND AND VORBISFILE_FOUND)
@@ -32,6 +33,15 @@ else()
             INTERFACE_INCLUDE_DIRECTORIES "${VORBISFILE_INCLUDE_DIRS}"
             INTERFACE_LINK_LIBRARIES PkgConfig::VORBISFILE
         )
+
+        # The editor audio importer encodes Vorbis, which lives in a separate library.
+        if(VORBISENC_FOUND)
+            add_library(Vorbis::vorbisenc INTERFACE IMPORTED)
+            set_target_properties(Vorbis::vorbisenc PROPERTIES
+                INTERFACE_INCLUDE_DIRECTORIES "${VORBISENC_INCLUDE_DIRS}"
+                INTERFACE_LINK_LIBRARIES PkgConfig::VORBISENC
+            )
+        endif()
     else()
         set(CMAKE_POSITION_INDEPENDENT_CODE ON)
         FetchContent_Declare(
@@ -54,6 +64,9 @@ else()
         endif()
         if(TARGET vorbisfile AND NOT TARGET Vorbis::vorbisfile)
             add_library(Vorbis::vorbisfile ALIAS vorbisfile)
+        endif()
+        if(TARGET vorbisenc AND NOT TARGET Vorbis::vorbisenc)
+            add_library(Vorbis::vorbisenc ALIAS vorbisenc)
         endif()
     endif()
 endif()

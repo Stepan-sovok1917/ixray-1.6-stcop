@@ -24,7 +24,7 @@ target_precompile_headers(ShaderEditor PRIVATE "stdafx.h")
 # Project defines
 target_compile_definitions(ShaderEditor PRIVATE _SHADER_EDITOR)
 
-target_compile_options(ShaderEditor PRIVATE /W0)
+ixray_silence_warnings(ShaderEditor)
 target_compile_definitions(ShaderEditor PRIVATE "$<$<CONFIG:Debug>:DEBUG>")
 
 # Linker list

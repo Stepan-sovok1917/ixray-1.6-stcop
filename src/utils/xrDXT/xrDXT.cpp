@@ -1,9 +1,9 @@
 #include "StdAfx.h"
 #include "xrDXT.h"
 
-#ifdef IXR_WINDOWS
+
 #include <RedImage/RedImage.hpp>
-#endif
+
 
 #include "../../xrEngine/ETextureParams.h"
 
@@ -14,7 +14,7 @@ extern int DXTCompressBump(const char* out_name, u8* raw_data, u8* normal_map, u
 extern bool DXTCompressBC7GPU(const char* FileName);
 #endif
 
-#ifdef IXR_WINDOWS
+
 void DXTUtils::Converter::MakeTGA(xr_path From, xr_path To)
 {
 	RedImageTool::RedImage Surface;
@@ -61,7 +61,7 @@ void DXTUtils::Converter::MakePNG(xr_path From, xr_path To)
 		Surface.SaveToPng(To.xstring().data());
 	}
 }
-#endif
+
 
 int DXT_API DXTUtils::Compress(const char* out_name, u8* raw_data, u8* normal_map, u32 w, u32 h, u32 pitch, STextureParams* fmt, u32 depth)
 {
@@ -132,7 +132,7 @@ int DXT_API DXTUtils::Compress(const char* out_name, u8* raw_data, u8* normal_ma
 	return -1;
 }
 
-#ifdef IXR_WINDOWS
+
 U8Vec DXT_API DXTUtils::GitPixels(const char* FileName, u32 NewW, u32 NewH)
 {
 	U8Vec Pixels;
@@ -191,4 +191,3 @@ void DXTUtils::Filter::Resize(u32* dst, u32 dstW, u32 dstH, u32* out, u32 outW, 
 	size_t PixelCount = Surface.GetWidth() * Surface.GetHeight() * 4;
 	memcpy(out, *Surface, PixelCount);
 }
-#endif

@@ -356,8 +356,11 @@ IC int _cdecl _ui64toa_s(uint64_t value, char *str, size_t size, int radix)
 }
 
 #ifndef XR_USE_NATIVE_D3D11
+#ifndef IXR_WIN32_LARGE_INTEGER_DEFINED
+#define IXR_WIN32_LARGE_INTEGER_DEFINED
 using LARGE_INTEGER = long long;
 using ULARGE_INTEGER = unsigned long long;
+#endif
 #endif
 
 IC long long _cdecl _atoi64(const char *str)

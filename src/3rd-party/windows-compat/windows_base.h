@@ -147,18 +147,23 @@ typedef struct POINT {
 
 typedef POINT* LPPOINT;
 
+#ifndef IXR_WIN32_RECT_DEFINED
+#define IXR_WIN32_RECT_DEFINED
 typedef struct RECT {
   LONG left;
   LONG top;
   LONG right;
   LONG bottom;
 } RECT,*PRECT,*NPRECT,*LPRECT;
+#endif
 
 typedef struct SIZE {
   LONG cx;
   LONG cy;
 } SIZE,*PSIZE,*LPSIZE;
 
+#ifndef IXR_WIN32_LARGE_INTEGER_DEFINED
+#define IXR_WIN32_LARGE_INTEGER_DEFINED
 typedef union {
   struct {
     DWORD LowPart;
@@ -172,6 +177,7 @@ typedef union {
 
   LONGLONG QuadPart;
 } LARGE_INTEGER;
+#endif
 
 typedef struct MEMORYSTATUS {
   DWORD  dwLength;

@@ -35,3 +35,10 @@ namespace ImGui
 {
 	XREUI_API bool HyperLink(const char* label, const char* url, bool underlineWhenHoveredOnly = false);
 }
+
+// The Win32 compatibility headers used by the editors bring a C-style NULL; the editor code is
+// C++ and compares pointers, so keep the C++ spelling everywhere.
+#ifdef __cplusplus
+#	undef NULL
+#	define NULL nullptr
+#endif

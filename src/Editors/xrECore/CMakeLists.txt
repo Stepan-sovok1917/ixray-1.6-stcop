@@ -74,12 +74,12 @@ target_precompile_headers(xrECore PRIVATE "stdafx.h")
 
 # Project defines
 target_compile_definitions(xrECore PRIVATE XRECORE_EXPORTS)
-target_compile_definitions(xrECore PRIVATE _WINDOWS)
-target_compile_definitions(xrECore PRIVATE _USRDLL)
+
+
 target_compile_definitions(xrECore PUBLIC XR_EDITOR_NEW)
 target_compile_definitions(xrECore PUBLIC _EDITOR)
 
-target_compile_options(xrECore PRIVATE /W0)
+ixray_silence_warnings(xrECore)
 target_compile_definitions(xrECore PRIVATE "$<$<CONFIG:Debug>:DEBUG>")
 
 # Linker list
@@ -97,6 +97,9 @@ target_link_libraries(xrECore PUBLIC NvMender2003)
 target_link_libraries(xrECore PRIVATE Ogg::ogg)
 target_link_libraries(xrECore PRIVATE Vorbis::vorbis)
 target_link_libraries(xrECore PRIVATE Vorbis::vorbisfile)
+if (TARGET Vorbis::vorbisenc)
+    target_link_libraries(xrECore PRIVATE Vorbis::vorbisenc)
+endif()
 
 if (WIN32)
 	target_link_libraries(xrECore PUBLIC DirectX::Mesh)
@@ -112,3 +115,8 @@ target_validate_pch(xrECore ${CMAKE_CURRENT_SOURCE_DIR})
 
 ## lunaSVG
 target_link_libraries(${PROJECT_NAME} PUBLIC lunasvg)
+
+# The editor GUI builds are Windows-only code paths; other platforms use the portable ones.
+if (WIN32)
+    target_compile_definitions(xrECore PRIVATE _WINDOWS _USRDLL)
+endif()

@@ -24,3 +24,26 @@ inline unsigned timeGetTime()
 		std::chrono::steady_clock::now() - start).count());
 }
 #endif
+
+// MSVC CRT spellings that the tool sources use; std has the same functions.
+#include <cmath>
+#include <ctime>
+
+inline char* _ctime32(const time_t* value)
+{
+	return ctime(value);
+}
+
+inline int _finite(double value) { return std::isfinite(value) ? 1 : 0; }
+inline int _isnan(double value) { return std::isnan(value) ? 1 : 0; }
+
+// MSVC takes the destination first; POSIX takes the source first.
+inline int localtime_s(struct tm* result, const time_t* value)
+{
+	return localtime_r(value, result) != nullptr ? 0 : errno;
+}
+
+// The Win32 memory helpers are plain standard library calls.
+#include <cstring>
+#define CopyMemory(destination, source, length) memcpy(destination, source, length)
+#define ZeroMemory(destination, length) memset(destination, 0, length)
