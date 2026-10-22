@@ -55,6 +55,13 @@ static void LogDeclaration(const char* title, const xr_vector<RHIInputElementDes
 bool CPreviewObject::EnumerateVSInputs(ID3DBlob* signature, xr_vector<SVSInput>& out)
 {
 	if (!signature) return false;
+
+#if !defined(IXR_WINDOWS)
+	// DXMT translates the shaders but does not ship the D3D11 reflection interface, so the
+	// vertex-input list stays empty here. The preview still renders the mesh.
+	Msg("* VS input enumeration is not available on this platform");
+	return false;
+#else
 	ID3D11ShaderReflection* reflect = nullptr;
 	HRESULT hr = D3DReflect(signature->GetBufferPointer(), signature->GetBufferSize(), IID_ID3D11ShaderReflection, (void**)&reflect);
 	if (FAILED(hr) || !reflect) return false;
@@ -83,6 +90,7 @@ bool CPreviewObject::EnumerateVSInputs(ID3DBlob* signature, xr_vector<SVSInput>&
 	}
 	reflect->Release();
 	return true;
+#endif
 }
 
 CPreviewObject::CPreviewObject()

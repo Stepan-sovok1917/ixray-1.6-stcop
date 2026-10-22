@@ -464,7 +464,7 @@ IC uint64_t _strtoui64(const char *nptr, char **endptr, int base)
     return _strtoui64_l(nptr, endptr, base, NULL);
 }
 
-IC char* _strlwr_s(char* strDestination, size_t sizeInBytes)
+IC char* _strlwr_s(char* strDestination, size_t sizeInBytes = 0)
 {
     return _strlwr(strDestination);
 }

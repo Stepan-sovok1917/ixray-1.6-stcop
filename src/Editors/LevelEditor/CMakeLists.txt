@@ -69,7 +69,7 @@ add_dependencies(LevelEditor xrGame)
 target_validate_pch(LevelEditor ${CMAKE_CURRENT_SOURCE_DIR})
 
 ## LibOGG
-target_link_libraries(LevelEditor PRIVATE ${SND_OGG}native/lib/${CMAKE_VS_PLATFORM_NAME}/Release/libogg.lib)
+target_link_libraries(LevelEditor PRIVATE Ogg::ogg)
 target_include_directories(LevelEditor PRIVATE "${SND_OGG}/native/include/")
 
 ## Vorbis

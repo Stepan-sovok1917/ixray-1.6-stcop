@@ -136,7 +136,10 @@ void UITopBarForm::ClickOpenGameData()
 {
     string_path GameDataPath;
     FS.update_path(GameDataPath, "$game_data$", "");
-    ShellExecuteA(NULL, "open", GameDataPath, NULL, NULL, SW_SHOWDEFAULT);
+    // Ask the desktop to show the folder; SDL_OpenURL is the portable equivalent.
+    xr_string GameDataUrl = "file://";
+    GameDataUrl += GameDataPath;
+    SDL_OpenURL(GameDataUrl.c_str());
 }
 
 void UITopBarForm::ClickPreferences()

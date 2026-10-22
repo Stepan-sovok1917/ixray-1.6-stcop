@@ -148,7 +148,7 @@ void UIPACEditorForm::DrawCurves()
 	{
 		ImGui::PushID("AxisSwitch");
 #define DrawAxisSwitch(X, sameline) \
-		ImGui::Checkbox(#X, &DrawData.##X); \
+		ImGui::Checkbox(#X, &DrawData.X); \
 		if constexpr(sameline){ ImGui::SameLine(); }
 		DrawAxisSwitch(R, true);
 		DrawAxisSwitch(G, true);

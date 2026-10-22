@@ -24,4 +24,9 @@ FetchContent_Declare(
 )
 
 FetchContent_MakeAvailable(imgui_node_editor)
+
+# crude_json.cpp calls std::terminate without including <exception>, which MSVC injects.
+if (NOT MSVC)
+    target_compile_options(imgui_node_editor PRIVATE -include exception)
+endif()
 set_target_properties(imgui_node_editor PROPERTIES FOLDER "3rd Party")

@@ -36,7 +36,9 @@ target_link_libraries(ShaderEditor PUBLIC xrSound)
 target_link_libraries(ShaderEditor PUBLIC imgui_node_editor)
 
 # VS input-signature reflection (CPreviewObject) needs the D3D11 reflection API.
-target_link_libraries(ShaderEditor PUBLIC d3d11.lib d3dcompiler.lib dxguid.lib)
+if (WIN32)
+    target_link_libraries(ShaderEditor PUBLIC d3d11.lib d3dcompiler.lib dxguid.lib)
+endif()
 
 # Move precompiled header
 set_target_properties(ShaderEditor PROPERTIES DISABLE_PRECOMPILE_HEADERS ON)
@@ -49,10 +51,10 @@ source_group("pch" FILES ${ESHE_SOURCE_PCH_FILES})
 #target_include_directories(ShaderEditor PRIVATE "${SND_OAL}/native/include/")
 
 ## LibOGG
-target_link_libraries(ShaderEditor PRIVATE ${SND_OGG}native/lib/${CMAKE_VS_PLATFORM_NAME}/Release/libogg.lib)
+target_link_libraries(ShaderEditor PRIVATE Ogg::ogg)
 target_include_directories(ShaderEditor PRIVATE "${SND_OGG}/native/include/")
 
-## Vorbis
-target_link_libraries(ShaderEditor PRIVATE ${SND_VOB}/native/lib/${CMAKE_VS_PLATFORM_NAME}/Release/libvorbisfile.lib)
-target_link_libraries(ShaderEditor PRIVATE ${SND_VOB}/native/lib/${CMAKE_VS_PLATFORM_NAME}/Release/libvorbis.lib)
+## Vorbis: the module resolves the platform's own build on every OS.
+target_link_libraries(ShaderEditor PRIVATE Vorbis::vorbisfile)
+target_link_libraries(ShaderEditor PRIVATE Vorbis::vorbis)
 target_include_directories(ShaderEditor PRIVATE "${SND_VOB}/native/include/")
