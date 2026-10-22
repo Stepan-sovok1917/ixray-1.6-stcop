@@ -47,3 +47,7 @@ inline int localtime_s(struct tm* result, const time_t* value)
 #include <cstring>
 #define CopyMemory(destination, source, length) memcpy(destination, source, length)
 #define ZeroMemory(destination, length) memset(destination, 0, length)
+
+// Case-insensitive comparisons: POSIX spells them without the leading underscore.
+#define _stricmp(a, b) strcasecmp(a, b)
+#define _strnicmp(a, b, n) strncasecmp(a, b, n)

@@ -14,6 +14,13 @@ source_group("src" FILES ${PCORE_SOURCE_ALL_FILES})
 # Apply list
 list(APPEND PCORE_SRC_FILES ${PCORE_SOURCE_ALL_FILES})
 
+# The file system has a Windows and a POSIX implementation; only one of them may be built.
+if (WIN32)
+    list(FILTER PCORE_SRC_FILES EXCLUDE REGEX "xr_file_system_posix\\.(cxx|h)$")
+else()
+    list(FILTER PCORE_SRC_FILES EXCLUDE REGEX "xr_file_system_win32\\.(cxx|h)$")
+endif()
+
 # Remove unused files
 #list(FILTER PCORE_SRC_FILES EXCLUDE REGEX "cl_raypick.cpp$")
 

@@ -66,8 +66,12 @@ const uint32_t UINT_FAST32_MAX = UINT32_MAX;
 
 #else
 
-#warning unexpected build environment
+// Clang and GCC follow the C standard: size_t is printed with the "z" length modifier.
 #include <inttypes.h>
+
+#ifndef PRIuSIZET
+#	define PRIuSIZET "zu"
+#endif
 
 #endif
 
