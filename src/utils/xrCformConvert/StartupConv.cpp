@@ -198,20 +198,20 @@ void StartupLevel()
 void StartupSpawn()
 {
 	setup_luabind_allocator();
-	const char* g_name = "xrSE_Factory.dll";
-	Msg("Loading DLL: %s", g_name);
-	auto hFactory = LoadLibraryA(g_name);
+	// Platform::LoadLibrary appends the platform suffix (.dll / .dylib / .so) itself.
+	const char* g_name = "xrSE_Factory";
+	Msg("Loading library: %s", g_name);
+	auto hFactory = Platform::LoadLibrary(g_name);
 
 	if (!hFactory)
 	{
-		R_CHK(GetLastError());
-		R_ASSERT2(hFactory, "Factory DLL raised exception during loading or there is no factory DLL at all");
+		R_ASSERT2(hFactory, "Factory library raised exception during loading or there is no factory library at all");
 		return;
 	}
-	xr_scope_exit hFactoryGuard = [&](){FreeModule(hFactory);};
+	xr_scope_exit hFactoryGuard = [&](){Platform::FreeLibrary(hFactory);};
 
-	create_entity = (SEFactory_Create*)GetProcAddress(hFactory, "create_entity"); R_ASSERT(create_entity);
-	destroy_entity = (SEFactory_Destroy*)GetProcAddress(hFactory, "destroy_entity");	R_ASSERT(destroy_entity);
+	create_entity = (SEFactory_Create*)Platform::GetAddress(hFactory, "create_entity"); R_ASSERT(create_entity);
+	destroy_entity = (SEFactory_Destroy*)Platform::GetAddress(hFactory, "destroy_entity");	R_ASSERT(destroy_entity);
 	
 	string_path file_name;
 	bool file_exists = !!FS.exist(file_name, "$game_spawn$", CFormConverter::GetConverterSettings().SpawnOrig.c_str(), ".spawn");
@@ -265,7 +265,11 @@ void StartupSpawn()
 
 void StartupConv()
 {
+#if defined(IXR_WINDOWS)
 	SetPriorityClass(GetCurrentProcess(), NORMAL_PRIORITY_CLASS);
+#else
+	// A POSIX process already runs in the normal scheduling class.
+#endif
 	
 	// Load project
 	//FS.update_path(INI_FILE, "$game_config$", GAME_CONFIG);

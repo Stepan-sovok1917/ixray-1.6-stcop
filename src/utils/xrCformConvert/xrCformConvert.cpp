@@ -5,7 +5,6 @@
 
 #include <luabind/luabind.hpp>
 #include <imgui.h>
-#include <timeapi.h>
 
 #include "../../Editors/xrEUI/imgui_impl_sdl3.h"
 #include "../xrLevelBuilder/UI/imgui_impl_sdlrenderer3.h"
@@ -19,7 +18,11 @@ void StartupConv();
 
 void Help(const char* h_str)
 {
+#if defined(IXR_WINDOWS)
 	MessageBoxA(0, h_str, "Command line options", MB_OK | MB_ICONINFORMATION);
+#else
+	Msg("%s", h_str);
+#endif
 }
 
 CJsonSerializer* Serializer = nullptr;
@@ -177,13 +180,7 @@ void CFormConverter::SaveCompilerCfg()
 	Serializer->Save();
 }
 
-int APIENTRY WinMain 
-(
-	HINSTANCE hInstance,
-	HINSTANCE hPrevInstance,
-	LPSTR     lpCmdLine,
-	int       nCmdShow
-) 
+static int RunEditor(const char* lpCmdLine)
 {
 	// Initialize debugging
 	Debug._initialize(false);
@@ -214,4 +211,24 @@ int APIENTRY WinMain
 	xr_delete(Serializer);
 
 	return 0;
+}
+
+
+// The engine uses the same portable entry macro: WinMain on Windows, main elsewhere.
+int ENTRY_FUNCTION(ENTRY_ARGS)
+{
+#if defined(IXR_WINDOWS)
+	(void)hInstance;
+	(void)hPrevInstance;
+	(void)nCmdShow;
+	return RunEditor(lpCmdLine);
+#else
+	xr_string cmd;
+	for (int i = 1; i < argc; ++i)
+	{
+		if (i > 1) cmd += ' ';
+		cmd += argv[i];
+	}
+	return RunEditor(cmd.c_str());
+#endif
 }

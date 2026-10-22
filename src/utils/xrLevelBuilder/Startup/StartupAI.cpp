@@ -51,22 +51,20 @@ SEFactory_Destroy* destroy_entity = 0;
 static HMODULE hFactory;
 
 void InitialFactory() {
-	const char* g_name = "xrSE_Factory.dll";
-	Msg("Loading DLL: %s", g_name);
-	hFactory = LoadLibraryA(g_name);
+	// Platform::LoadLibrary appends the platform suffix (.dll / .dylib / .so) itself.
+	const char* g_name = "xrSE_Factory";
+	Msg("Loading library: %s", g_name);
+	hFactory = Platform::LoadLibrary(g_name);
 
-	if (0 == hFactory)		
-		R_CHK(GetLastError());
+	R_ASSERT2(hFactory, "Factory library raised exception during loading or there is no factory library at all");
 
-	R_ASSERT2(hFactory, "Factory DLL raised exception during loading or there is no factory DLL at all");
-
-	create_entity = (SEFactory_Create*)GetProcAddress(hFactory, "create_entity");	R_ASSERT(create_entity);
-	destroy_entity = (SEFactory_Destroy*)GetProcAddress(hFactory, "destroy_entity");	R_ASSERT(destroy_entity);
+	create_entity = (SEFactory_Create*)Platform::GetAddress(hFactory, "create_entity");	R_ASSERT(create_entity);
+	destroy_entity = (SEFactory_Destroy*)Platform::GetAddress(hFactory, "destroy_entity");	R_ASSERT(destroy_entity);
 }
 
 void DestroyFactory()
 {
-	FreeLibrary(hFactory);
+	Platform::FreeLibrary(hFactory);
 }
  
 void StartupAI()

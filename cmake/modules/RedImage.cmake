@@ -26,18 +26,27 @@ else()
     )
     FetchContent_MakeAvailable(redimage)
 
+    # The sources include <RedImage/RedImage.hpp>, which is the layout of the Windows nuget
+    # package, so both the package root and the library folder are on the include path.
     if(NOT TARGET RedImage::RedImage)
         add_library(RedImage::RedImage INTERFACE IMPORTED)
         set_target_properties(RedImage::RedImage PROPERTIES
-            INTERFACE_INCLUDE_DIRECTORIES "${redimage_SOURCE_DIR}/RedImage"
+            INTERFACE_INCLUDE_DIRECTORIES "${redimage_SOURCE_DIR};${redimage_SOURCE_DIR}/RedImage"
             INTERFACE_LINK_LIBRARIES RedImage
         )
+    endif()
 
-
+    if(NOT TARGET NVTT::nvtt)
         add_library(NVTT::nvtt INTERFACE IMPORTED)
-        target_link_libraries(NVTT::nvtt INTERFACE RedImage)
-        
-        target_include_directories(NVTT::nvtt INTERFACE 
+
+        # RedImage builds nvtt from its own deps; the Windows nuget package ships it separately.
+        if(TARGET nvtt)
+            target_link_libraries(NVTT::nvtt INTERFACE nvtt RedImage)
+        else()
+            target_link_libraries(NVTT::nvtt INTERFACE RedImage)
+        endif()
+
+        target_include_directories(NVTT::nvtt INTERFACE
             "${redimage_SOURCE_DIR}/deps/nvtt/src"
         )
     endif()

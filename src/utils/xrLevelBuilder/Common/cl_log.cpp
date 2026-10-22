@@ -1,8 +1,6 @@
 #include "../Resources/resource.h"
 #include "../../../xrCore/xrCore.h"
 #include <time.h>
-#include <mmsystem.h>
-#include <CommCtrl.h>
 #include "cl_log.h"
 
 i_lc_log* lc_log = 0;

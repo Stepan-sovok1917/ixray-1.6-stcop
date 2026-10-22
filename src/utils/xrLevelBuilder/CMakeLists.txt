@@ -240,10 +240,16 @@ target_link_libraries(xrLevelBuilder PRIVATE
     MagicFM
     NvMender2003
     NvTriStrip
-    "rpcrt4.lib"
-    "${XLB_PACKAGES}/ImeSense.Packages.Zlib.1.2.13.1/native/lib/${CMAKE_VS_PLATFORM_NAME}/Release/zlib.lib"
-    "${XLB_EMBREE}/runtimes/win-x64/native/Release/embree4.lib"
 )
+
+if (WIN32)
+    # Windows-only runtimes: the RPC stub, the nuget zlib build and Embree's DLL import library.
+    target_link_libraries(xrLevelBuilder PRIVATE
+        "rpcrt4.lib"
+        "${XLB_PACKAGES}/ImeSense.Packages.Zlib.1.2.13.1/native/lib/${CMAKE_VS_PLATFORM_NAME}/Release/zlib.lib"
+        "${XLB_EMBREE}/runtimes/win-x64/native/Release/embree4.lib"
+    )
+endif()
 
 if (WIN32)
     target_link_libraries(xrLevelBuilder PRIVATE DirectX::Mesh)

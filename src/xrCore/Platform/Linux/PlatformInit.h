@@ -73,6 +73,7 @@ using BYTE = unsigned char;
 using UINT_PTR = uint64_t;
 
 using DWORD = uint32_t;
+using WORD = uint16_t;
 using BOOL = int32_t;
 using HRESULT = int32_t;
 using LRESULT = long;
