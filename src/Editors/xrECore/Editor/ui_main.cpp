@@ -535,7 +535,10 @@ void TUI::Redraw()
 	static u32 UpscaledMode = 0;
 	bool UpscalerReset = UpscaledViewID != View.ViewGlobalIDX;
 
-	if (u32(View.RTSize.x) != EDevice->TargetWidth || u32(View.RTSize.y) != EDevice->TargetHeight || SceneSize.x != HalfTarget.x || SceneSize.y != HalfTarget.y || UpscaledMode != GEditorDraw.Upscaler || !RT->pSurface)
+	// The first frame runs before the viewport canvas has a size, and render targets cannot
+	// be created from an empty rectangle.
+	const bool ViewHasSize = GetRenderWidth() > 0 && GetRenderHeight() > 0;
+	if (ViewHasSize && (u32(View.RTSize.x) != EDevice->TargetWidth || u32(View.RTSize.y) != EDevice->TargetHeight || SceneSize.x != HalfTarget.x || SceneSize.y != HalfTarget.y || UpscaledMode != GEditorDraw.Upscaler || !RT->pSurface))
 	{
 		if (!ImGui::IsMouseDown(ImGuiMouseButton_Left))
 		{
