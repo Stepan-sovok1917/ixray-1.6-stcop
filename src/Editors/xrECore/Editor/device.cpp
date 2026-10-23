@@ -129,7 +129,11 @@ void CEditorRenderDevice::Initialize()
     ::RImplementation.Initialize();
 	UIRender->CreateUIGeom();
 
-	Resize(EPrefs->start_w, EPrefs->start_h, EPrefs->start_maximized);
+	// A first run has no saved window size, and an empty rectangle cannot back a
+	// render target.
+	const int StartW = EPrefs->start_w > 0 ? EPrefs->start_w : Width;
+	const int StartH = EPrefs->start_h > 0 ? EPrefs->start_h : Height;
+	Resize(StartW, StartH, EPrefs->start_maximized);
 
 	SDL_GetWindowSizeInPixels(g_AppInfo.Window, &Width, &Height);
 	SDL_GetWindowPosition(g_AppInfo.Window, &PosX, &PosY);

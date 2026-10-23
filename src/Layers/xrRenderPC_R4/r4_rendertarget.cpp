@@ -326,6 +326,19 @@ xr_map<xr_string, float> PowerMap;
 
 CRenderTarget::CRenderTarget()
 {
+	// The target is rebuilt on every device reset, and the first one runs before the window
+	// size is known: fall back to the back buffer so no render target is zero-sized.
+	if (Device.TargetWidth == 0 || Device.TargetHeight == 0)
+	{
+		Device.TargetWidth = (u32)RCache.get_width();
+		Device.TargetHeight = (u32)RCache.get_height();
+		if (Device.TargetWidth == 0 || Device.TargetHeight == 0)
+		{
+			Device.TargetWidth = 1024;
+			Device.TargetHeight = 768;
+		}
+	}
+
 	if (g_debug_blend_state == nullptr) {
 		D3D11_BLEND_DESC desc;
 		ZeroMemory(&desc, sizeof(desc));
@@ -809,8 +822,10 @@ CRenderTarget::CRenderTarget()
 	{
 		ERHI_FORMAT	fmt = ERHI_FORMAT::R11G11B10_FLOAT;
 
-		u32 BW_G = std::ceil(Device.TargetWidth / 128.0f), 
-			BH_G = std::ceil(Device.TargetHeight / 128);
+		// The chain is built from the target size, which may still be unknown on the first
+		// device reset; a zero-sized render target is not allowed.
+		u32 BW_G = std::max(1u, (u32)std::ceil(Device.TargetWidth / 128.0f)),
+			BH_G = std::max(1u, (u32)std::ceil(Device.TargetHeight / 128.0f));
 
 		u32 BW_F = BW_G * 2, BH_F = BH_G * 2;
 		u32 BW_E = BW_F * 2, BH_E = BH_F * 2;
