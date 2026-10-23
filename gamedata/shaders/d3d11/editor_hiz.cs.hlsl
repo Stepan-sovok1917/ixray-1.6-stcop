@@ -4,13 +4,14 @@
 // The CPU reads the grid back and rejects boxes whose nearest point is behind it.
 RWTexture2D<float> u_hiz : register(u0);
 
-uniform float4 editor_hiz_params; // xy: viewport size in pixels
+uniform float4 editor_hiz_params; // xy: viewport size in pixels, zw: grid size in cells
 
 [numthreads(8, 8, 1)]
 void main(uint2 DTid : SV_DispatchThreadID)
 {
-	uint2 GridSize;
-	u_hiz.GetDimensions(GridSize.x, GridSize.y);
+	// The grid size arrives in the constant buffer: not every shader compiler implements
+	// GetDimensions on a UAV texture.
+	uint2 GridSize = (uint2)editor_hiz_params.zw;
 
 	if (any(DTid >= GridSize))
 	{

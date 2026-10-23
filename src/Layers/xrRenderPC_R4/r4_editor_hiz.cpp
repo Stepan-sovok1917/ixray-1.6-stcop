@@ -175,7 +175,7 @@ void CEditorHiZ::Build()
 	RCache.set_Constants(P.constants);
 	RCache.set_Textures(P.T);
 	RCache.set_CS(P.cs);
-	RCache.set_c("editor_hiz_params", float(Width), float(Height), 0.f, 0.f);
+	RCache.set_c("editor_hiz_params", float(Width), float(Height), float(GridWidth), float(GridHeight));
 
 	UINT InitialCount = 0;
 	RContext->CSSetUnorderedAccessViews(0, 1, &GridUAV, &InitialCount);

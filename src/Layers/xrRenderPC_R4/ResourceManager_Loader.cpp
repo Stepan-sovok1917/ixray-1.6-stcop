@@ -65,6 +65,14 @@ void	CResourceManager::OnDeviceCreate	(IReader* F)
 //#ifndef _EDITOR
 	// scripting
 	LS_Load					();
+
+	// A fresh editor checkout has no compiled shader library; the shaders are then built
+	// from source on demand instead of crashing on a null reader.
+	if (F == nullptr)
+	{
+		m_textures_description.Load();
+		return;
+	}
 //#endif
 	IReader*	fs			= nullptr;
 	// Load constants

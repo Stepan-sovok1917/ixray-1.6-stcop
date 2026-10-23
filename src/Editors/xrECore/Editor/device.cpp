@@ -109,6 +109,10 @@ void CEditorRenderDevice::Initialize()
 {
     m_DefaultMat.set(1,1,1);
 
+	// The window exists before the first message box, so a missing file is reported over the
+	// editor instead of over an empty desktop.
+	CreateWindow();
+
 	// compiler shader
     string_path fn;
     FS.update_path(fn,_game_data_,"shaders_xrlc.xr");
@@ -117,7 +121,6 @@ void CEditorRenderDevice::Initialize()
     }else{
     	ELog.DlgMsg(mtInformation,"Can't find file '%s'",fn);
     }
-	CreateWindow();
 
 
 	// Startup shaders
