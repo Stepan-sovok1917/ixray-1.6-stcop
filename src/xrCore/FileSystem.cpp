@@ -112,6 +112,56 @@ UINT_PTR CALLBACK OFNHookProcOldStyle(HWND, UINT, WPARAM, LPARAM)
 	return 0;
 }
 
+
+#if !defined(IXR_WINDOWS)
+namespace
+{
+	// SDL renders the native file dialog on every platform; the calls are asynchronous, so the
+	// editor keeps pumping events until the user answers and then returns like the Win32 one.
+	struct SFileDialogAnswer
+	{
+		bool Answered = false;
+		xr_string Path;
+	};
+
+	void FileDialogCallback(void* UserData, const char* const* FileList, int)
+	{
+		SFileDialogAnswer* Answer = static_cast<SFileDialogAnswer*>(UserData);
+		Answer->Answered = true;
+
+		if (FileList != nullptr && FileList[0] != nullptr)
+		{
+			Answer->Path = FileList[0];
+		}
+	}
+
+	// "*.dds; *.tga" is turned into the pattern SDL expects: "*.dds;*.tga".
+	xr_string MakeDialogPattern(const char* Ext)
+	{
+		xr_string Pattern = (Ext && Ext[0]) ? Ext : "*";
+
+		for (size_t Index = 0; Index < Pattern.size(); ++Index)
+		{
+			if (Pattern[Index] == ' ')
+			{
+				Pattern.erase(Index--, 1);
+			}
+		}
+
+		return Pattern;
+	}
+
+	void WaitForFileDialog(SFileDialogAnswer& Answer)
+	{
+		while (!Answer.Answered)
+		{
+			SDL_PumpEvents();
+			SDL_Delay(10);
+		}
+	}
+}
+#endif
+
 bool EFS_Utils::GetOpenNameInternal(const char* initial, LPSTR buffer, int sz_buf, bool bMulti, const char* offset, int start_flt_ext, const char* ext)
 {
 #ifdef IXR_WINDOWS
@@ -196,7 +246,24 @@ bool EFS_Utils::GetOpenNameInternal(const char* initial, LPSTR buffer, int sz_bu
 	strlwr(buffer);
 	return bRes;
 #else
-	return false;
+	FS_Path& P = *FS.get_path(initial);
+
+	const xr_string Pattern = MakeDialogPattern(ext ? ext : P.m_DefExt);
+	const SDL_DialogFileFilter Filter = {"Files", Pattern.c_str()};
+
+	SFileDialogAnswer Answer;
+	const char* DefaultLocation = (offset && offset[0]) ? offset : P.m_Path;
+
+	SDL_ShowOpenFileDialog(FileDialogCallback, &Answer, g_AppInfo.Window, &Filter, 1, DefaultLocation, bMulti);
+	WaitForFileDialog(Answer);
+
+	if (Answer.Path.empty())
+	{
+		return false;
+	}
+
+	xr_strcpy(buffer, sz_buf, Answer.Path.c_str());
+	return true;
 #endif
 }
 
@@ -256,7 +323,33 @@ bool EFS_Utils::GetSaveName(const char* initial, string_path& buffer, const char
 	strlwr(buffer);
 	return bRes;
 #else
-	return false;
+	FS_Path& P = *FS.get_path(initial);
+
+	const xr_string Pattern = MakeDialogPattern(ext ? ext : P.m_DefExt);
+	const SDL_DialogFileFilter Filter = {"Files", Pattern.c_str()};
+
+	SFileDialogAnswer Answer;
+	string_path DefaultLocation = {};
+	const char* Start = (offset && offset[0]) ? offset : P.m_Path;
+	xr_strcpy(DefaultLocation, Start);
+
+	// The dialog gets the folder to start in; the name itself is typed into the dialog.
+	char* LastSlash = strrchr(DefaultLocation, '/');
+	if (LastSlash != nullptr && DefaultLocation[strlen(DefaultLocation) - 1] != '/')
+	{
+		// A file name was passed in: keep it, the dialog uses it as the suggested name.
+	}
+
+	SDL_ShowSaveFileDialog(FileDialogCallback, &Answer, g_AppInfo.Window, &Filter, 1, DefaultLocation);
+	WaitForFileDialog(Answer);
+
+	if (Answer.Path.empty())
+	{
+		return false;
+	}
+
+	xr_strcpy(buffer, sizeof(buffer), Answer.Path.c_str());
+	return true;
 #endif
 }
 

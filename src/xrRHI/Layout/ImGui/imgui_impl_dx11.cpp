@@ -69,11 +69,14 @@ static void ImGui_ImplDX11_SetupRenderState(ImDrawData* draw_data, ID3D11DeviceC
 {
 	ImGui_ImplDX11_Data* bd = ImGui_ImplDX11_GetBackendData();
 
-	// Setup viewport
+	// Setup viewport. The interface is laid out in points, and a Retina display renders it
+	// into a framebuffer that is larger by the framebuffer scale.
 	D3D11_VIEWPORT vp;
 	memset(&vp, 0, sizeof(D3D11_VIEWPORT));
-	vp.Width = draw_data->DisplaySize.x;
-	vp.Height = draw_data->DisplaySize.y;
+	const ImVec2 fb_scale = draw_data->FramebufferScale.x > 0.0f && draw_data->FramebufferScale.y > 0.0f
+		? draw_data->FramebufferScale : ImVec2(1.0f, 1.0f);
+	vp.Width = draw_data->DisplaySize.x * fb_scale.x;
+	vp.Height = draw_data->DisplaySize.y * fb_scale.y;
 	vp.MinDepth = 0.0f;
 	vp.MaxDepth = 1.0f;
 	vp.TopLeftX = vp.TopLeftY = 0;
