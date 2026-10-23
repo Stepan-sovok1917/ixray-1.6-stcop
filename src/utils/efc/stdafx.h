@@ -8,13 +8,23 @@
 
 #pragma once
 
-#include <io.h>
 #include <math.h>
 #include <memory.h>
-#include <conio.h>
 #include <stdio.h>
 #include <time.h>
+#include <stdarg.h>
+#include <filesystem>
+#include <string>
+#include <cstdlib>
+#include <cctype>
+
+#ifdef IXR_WINDOWS
+#include <io.h>
+#include <conio.h>
 #include <windows.h>
+#else
+#include <unistd.h>
+#endif
 
 #ifdef _DEBUG
 	#define __ASSERT(bExpression)\
@@ -71,3 +81,18 @@
 
 typedef unsigned int uint;
 typedef unsigned char uchar;
+
+#if !defined(IXR_WINDOWS)
+// Windows-only helpers used by the legacy sources.
+inline char* _strupr(char* text)
+{
+	for (char* p = text; *p; ++p)
+		*p = (char)toupper((unsigned char)*p);
+	return text;
+}
+inline long long _atoi64(const char* text) { return std::atoll(text); }
+inline char* strupr(char* text) { return _strupr(text); }
+
+using std::min;
+using std::max;
+#endif

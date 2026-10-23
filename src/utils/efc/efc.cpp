@@ -130,10 +130,15 @@ void vfPerformOperations( int argc, char *argv[], char *caProjectFolder, bool bS
 	}
 }
 
+#if defined(IXR_WINDOWS)
 int __cdecl main( int argc, char *argv[], char *envp[])
+#else
+int main( int argc, char *argv[])
+#endif
 {
 	bfLoadIniFile(INI_FILE);
 	if (bfCheckForSwitch(argc, argv,"pa")) {
+#if defined(IXR_WINDOWS)
 		struct _finddata_t tProject;
 		bool bFirst = true;
 		uint uiHandle;
@@ -166,6 +171,24 @@ int __cdecl main( int argc, char *argv[], char *envp[])
 					vfPerformOperations(argc,argv,tProject.name,false);
 				}
 		}
+#else
+		uint uiProjectProcessedCount = 0;
+		vfPrintHeader(true);
+		std::error_code ec;
+		for (const auto& entry : std::filesystem::directory_iterator("data", ec))
+		{
+			if (!entry.is_directory())
+				continue;
+			std::string name = entry.path().filename().string();
+			++uiProjectProcessedCount;
+			vfDualPrintF("\nPROJECT BEING PROCESSED : %s\n", name.c_str());
+			vfPerformOperations(argc, argv, &name[0], false);
+		}
+		if (!uiProjectProcessedCount)
+			vfDualPrintF("Projects not found\n");
+		else
+			vfDualPrintF("\nTotal processed %d projects\n\n", uiProjectProcessedCount);
+#endif
 	}
 	else {
 		char *caProjectFolder = cafGetStringNextToSwitch(argc, argv,"p");
