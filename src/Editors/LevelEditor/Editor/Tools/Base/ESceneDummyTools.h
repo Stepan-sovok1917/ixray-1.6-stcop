@@ -12,8 +12,10 @@ public:
                         
     virtual void		Clear					(bool bSpecific=false){inherited::Clear(bSpecific);}
 	// definition
-    IC const char*			ClassName				(){THROW; return 0;}
-    IC const char*			ClassDesc				(){THROW; return 0;}
+    // The placeholder tool has no name of its own; the callers treat an empty name as
+    // "no tool" instead of aborting the frame.
+    IC const char*			ClassName				(){return "";}
+    IC const char*			ClassDesc				(){return "";}
     IC int				RenderPriority			(){return -1; }
 
     virtual bool   		IsNeedSave				(){return false;}
