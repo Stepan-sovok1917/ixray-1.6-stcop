@@ -613,6 +613,15 @@ void CEditorRenderDevice::CreateWindow()
 	g_AppInfo.Window = SDL_CreateWindow("IX-Ray Editor", DisplayX, DisplayY, SDL_WINDOW_HIDDEN | SDL_WINDOW_RESIZABLE);
 	SDL_ShowWindow(g_AppInfo.Window);
 	SDL_RaiseWindow(g_AppInfo.Window);
+
+	// The render targets are created before the window is resized, so the viewport size must
+	// be known here; a zero size trips the render target assertions.
+	SDL_GetWindowSizeInPixels(g_AppInfo.Window, &Width, &Height);
+	if (Width <= 0 || Height <= 0)
+	{
+		Width = DisplayX;
+		Height = DisplayY;
+	}
 }
 
 void CEditorRenderDevice::DestryWindow()
