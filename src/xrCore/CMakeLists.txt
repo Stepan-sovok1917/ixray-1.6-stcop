@@ -21,6 +21,11 @@ endforeach()
 
 list(APPEND CORE_SRC_FILES ${CORE_SOURCE_ALL_FILES})
 
+if(APPLE)
+	# Cocoa declares BOOL on its own terms, which clashes with the engine precompiled header.
+	set_source_files_properties("Platform/MacOS/FileDialog.mm" PROPERTIES SKIP_PRECOMPILE_HEADERS ON)
+endif()
+
 if(MSVC)
 	list(APPEND CORE_SRC_FILES ${CORE_NATVIS_FILES})
 endif()
@@ -119,6 +124,9 @@ if(APPLE)
 
 	# filewatch.hpp needs FSEvents and CoreFoundation on macOS.
 target_link_libraries(xrCore PRIVATE "-framework CoreFoundation" "-framework CoreServices")
+
+	# The file dialog is a Cocoa panel.
+target_link_libraries(xrCore PRIVATE "-framework Cocoa")
 
 endif()
 

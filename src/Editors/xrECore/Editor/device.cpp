@@ -612,9 +612,18 @@ HWND CEditorRenderDevice::GetHWND() const
 
 void CEditorRenderDevice::CreateWindow()
 {
-	const SDL_DisplayMode* DesktopMode = SDL_GetCurrentDisplayMode(SDL_GetPrimaryDisplay());
-	int DisplayX = DesktopMode ? DesktopMode->w : 1280;
-	int DisplayY = DesktopMode ? DesktopMode->h : 720;
+	// The display mode is reported in pixels, while the window is placed and sized in points;
+	// asking for the mode on a Retina screen made the window twice as wide as the screen.
+	SDL_Rect UsableBounds = {};
+	if (!SDL_GetDisplayUsableBounds(SDL_GetPrimaryDisplay(), &UsableBounds) || UsableBounds.w <= 0 || UsableBounds.h <= 0)
+	{
+		const SDL_DisplayMode* DesktopMode = SDL_GetCurrentDisplayMode(SDL_GetPrimaryDisplay());
+		UsableBounds.w = DesktopMode ? DesktopMode->w : 1280;
+		UsableBounds.h = DesktopMode ? DesktopMode->h : 720;
+	}
+
+	const int DisplayX = UsableBounds.w;
+	const int DisplayY = UsableBounds.h;
 
 	g_AppInfo.Window = SDL_CreateWindow("IX-Ray Editor", DisplayX, DisplayY, SDL_WINDOW_HIDDEN | SDL_WINDOW_RESIZABLE);
 	SDL_ShowWindow(g_AppInfo.Window);

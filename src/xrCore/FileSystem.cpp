@@ -113,6 +113,11 @@ UINT_PTR CALLBACK OFNHookProcOldStyle(HWND, UINT, WPARAM, LPARAM)
 }
 
 
+#if defined(__APPLE__)
+// Implemented in Platform/MacOS/FileDialog.mm.
+extern bool MacFileDialog(bool bSave, const char* DefaultDirectory, const char* Patterns, std::string& Out);
+#endif
+
 #if !defined(IXR_WINDOWS)
 namespace
 {
@@ -271,6 +276,19 @@ bool EFS_Utils::GetOpenNameInternal(const char* initial, LPSTR buffer, int sz_bu
 
 	const char* DefaultLocation = FS.path_exist(DefaultLocationStorage.c_str()) ? DefaultLocationStorage.c_str() : nullptr;
 
+#if defined(__APPLE__)
+	// The system panel is modal and runs its own loop, which the asynchronous SDL call does not
+	// get here: it returns an empty answer before the panel is even on screen.
+	std::string Picked;
+
+	if (!MacFileDialog(false, DefaultLocation, Pattern.c_str(), Picked) || Picked.empty())
+	{
+		return false;
+	}
+
+	xr_strcpy(buffer, sz_buf, Picked.c_str());
+	return true;
+#else
 	SDL_ShowOpenFileDialog(FileDialogCallback, &Answer, g_AppInfo.Window, &Filter, 1, DefaultLocation, bMulti);
 	WaitForFileDialog(Answer);
 
@@ -281,6 +299,7 @@ bool EFS_Utils::GetOpenNameInternal(const char* initial, LPSTR buffer, int sz_bu
 
 	xr_strcpy(buffer, sz_buf, Answer.Path.c_str());
 	return true;
+#endif
 #endif
 }
 
