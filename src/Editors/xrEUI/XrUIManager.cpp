@@ -347,7 +347,25 @@ void XrUIManager::Draw()
 		ImGui::PushStyleColor(ImGuiCol_Border, XRay::ImGui::GetEditorColor(XRay::ImGui::EEditorColors::BackgroundTint).Value);
 
 		ImGui::Begin("MyDockspace", NULL, window_flags);
-		ImGui::DockSpace(ImGui::GetID("MyDockspace"));
+		const ImGuiID DockspaceId = ImGui::GetID("MyDockspace");
+		ImGui::DockSpace(DockspaceId);
+		// A fresh profile has no saved layout, and then every panel opens as a floating
+		// window on top of the others; place them once.
+		if (ImGui::DockBuilderGetNode(DockspaceId) == nullptr)
+		{
+			ImGui::DockBuilderRemoveNode(DockspaceId);
+			ImGui::DockBuilderAddNode(DockspaceId, ImGuiDockNodeFlags_DockSpace);
+			ImGui::DockBuilderSetNodeSize(DockspaceId, viewport->Size);
+			ImGuiID CenterId = DockspaceId;
+			const ImGuiID LeftId = ImGui::DockBuilderSplitNode(CenterId, ImGuiDir_Left, 0.22f, nullptr, &CenterId);
+			const ImGuiID RightId = ImGui::DockBuilderSplitNode(CenterId, ImGuiDir_Right, 0.28f, nullptr, &CenterId);
+			const ImGuiID BottomId = ImGui::DockBuilderSplitNode(CenterId, ImGuiDir_Down, 0.25f, nullptr, &CenterId);
+			ImGui::DockBuilderDockWindow("Object List", LeftId);
+			ImGui::DockBuilderDockWindow("Properties", RightId);
+			ImGui::DockBuilderDockWindow("Log", BottomId);
+			ImGui::DockBuilderDockWindow("Error Collector", BottomId);
+			ImGui::DockBuilderFinish(DockspaceId);
+		}
 		ImGui::End();
 
 		ImGui::PopStyleColor(2); // Border, WindowBG
