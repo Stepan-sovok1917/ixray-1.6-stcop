@@ -122,6 +122,13 @@ inline int strcpy_s(char *dest, size_t num, const char *source)
     return ERANGE;
 }
 
+// The MSVC template overload: the destination size comes from the array itself.
+template<size_t N>
+inline int strcpy_s(char (&dest)[N], const char *source)
+{
+    return strcpy_s(dest, N, source);
+}
+
 inline errno_t strncpy_s(char * dest, const char * src, size_t count)
 {
     if (!dest || !src)

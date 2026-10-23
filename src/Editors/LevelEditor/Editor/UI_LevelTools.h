@@ -49,7 +49,7 @@ class CLevelTool: public CToolCustom
 	void UpdateProperties();
 	void UpdateObjectList();
 
-	HANDLE mtPropObj = nullptr;
+	Platform::Event mtPropObj;
 	static void mtUpdateProperties(void*);
 	xr_vector<IViewport*> Viewlist;
 

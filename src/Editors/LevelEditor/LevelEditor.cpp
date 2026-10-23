@@ -220,7 +220,7 @@ static int RunEditor(const char* pCmdLine)
 						{
 							pInput->acquire();
 							EContext.UI->IsEnableInput = false;
-							ShowCursor(false);
+							SDL_HideCursor();
 						}
 					}
 				}break;

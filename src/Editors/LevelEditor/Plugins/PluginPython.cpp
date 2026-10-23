@@ -15,58 +15,35 @@ bool CPluginPython::IsPythonInstalled() const
 
 xr_string CPluginPython::RunCommand(const xr_string& command)
 {
-	HANDLE hRead, hWrite;
-	SECURITY_ATTRIBUTES sa = { sizeof(SECURITY_ATTRIBUTES), nullptr, true };
-
-	// Создаем анонимный канал (pipe)
-	if (!CreatePipe(&hRead, &hWrite, &sa, 0))
-	{
-		Msg("! Error creating pipe...");
-		return "";
-	}
-
-	STARTUPINFOA si = { sizeof(STARTUPINFOA) };
-	si.dwFlags = STARTF_USESTDHANDLES;
-	si.hStdOutput = hWrite;
-	si.hStdError = hWrite;
-
-	PROCESS_INFORMATION pi;
-	xr_string cmd = "cmd /C " + command;
-
-	// Указываем рабочий каталог
+	// popen runs the line through the shell and hands back its combined output, which is what
+	// the Win32 pipe dance did.
 	string_path Root;
 	FS.update_path(Root, "$fs_root$", "");
 
-	// Создаем процесс
-	if (!CreateProcessA(nullptr, const_cast<char*>(cmd.c_str()), nullptr, nullptr, true, CREATE_NO_WINDOW, nullptr, Root, &si, &pi))
+	xr_string CommandLine = "cd \"";
+	CommandLine += Root;
+	CommandLine += "\" && ";
+	CommandLine += command;
+	CommandLine += " 2>&1";
+
+	FILE* Pipe = popen(CommandLine.c_str(), "r");
+	if (Pipe == nullptr)
 	{
-		CloseHandle(hRead);
-		CloseHandle(hWrite);
 		Msg("! Error starting process...");
 		return "";
 	}
 
-	CloseHandle(hWrite);
-
-	// Читаем вывод
 	string128 buffer;
-	DWORD bytesRead;
 	xr_string output;
 
-	while (ReadFile(hRead, buffer, sizeof(buffer) - 1, &bytesRead, nullptr) && bytesRead > 0)
+	while (fgets(buffer, sizeof(buffer), Pipe) != nullptr)
 	{
-		buffer[bytesRead] = '\0';
 		output += buffer;
 	}
 
-	CloseHandle(hRead);
-	CloseHandle(pi.hProcess);
-	CloseHandle(pi.hThread);
-
-	output = Platform::ANSI_TO_UTF8(output);
-	return output;
+	pclose(Pipe);
+	return Platform::ANSI_TO_UTF8(output);
 }
-
 CPluginPython::CPluginPython()
 {
 	Type = EPluginType::Python;

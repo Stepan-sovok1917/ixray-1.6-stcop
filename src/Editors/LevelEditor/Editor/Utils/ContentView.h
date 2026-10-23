@@ -9,6 +9,9 @@ class CContentView:
 {
 	friend class CLevelPreferences;
 
+	// A member with a throwing destructor would otherwise weaken the spec of the implicit one.
+	virtual ~CContentView() noexcept { }
+
 private:
 
 	struct DragDropData 

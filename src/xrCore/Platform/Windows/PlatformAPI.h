@@ -8,6 +8,7 @@
 
 #include "MutexHandle.h"
 
+#include "Event.h"
 #include "Process.h"
 
 #define ENTRY_ARGS HINSTANCE hInstance, HINSTANCE hPrevInstance, char* lpCmdLine, int nCmdShow

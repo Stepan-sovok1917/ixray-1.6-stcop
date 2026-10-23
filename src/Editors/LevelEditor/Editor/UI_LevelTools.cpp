@@ -29,10 +29,10 @@ CLevelTool::CLevelTool()
 	dwFogColor	= 0xffffffff;
 	m_Flags.zero();
 	m_ToolForm = 0;
-	m_CompilerProcess.hProcess = 0;
+	m_CompilerProcess.Close();
 
 	CurrentTool = nullptr;
-	mtPropObj = CreateEventA(nullptr, true, false, nullptr);
+	// The properties thread waits on this event; it is announced with UpdateProperties.
 	thread_spawn(mtUpdateProperties, "PropertiesAsync", 1, this);
 }
 
@@ -323,7 +323,7 @@ void CLevelTool::mtUpdateProperties(void* This)
 
 	while (true)
 	{
-		WaitForSingleObject(pTool->mtPropObj, INFINITE);
+		pTool->mtPropObj.Wait();
 
 		while (!pTool->m_WorldProps->DrawComplete || !pTool->m_Props->DrawComplete)
 		{
@@ -358,7 +358,7 @@ void CLevelTool::mtUpdateProperties(void* This)
 			MainForm->GetPropertiesForm()->PropUpdateIsCompleted = true;
 		}
 
-		ResetEvent(pTool->mtPropObj);
+		pTool->mtPropObj.Reset();
 	}
 }
 
@@ -369,7 +369,7 @@ void CLevelTool::UpdateProperties()
 		MainForm->GetPropertiesForm()->PropUpdateIsCompleted = false;
 	}
 
-	SetEvent(mtPropObj);
+	mtPropObj.Set();
 	m_Flags.set(flUpdateProperties, false);
 	m_Props->setModified(false);
 }
@@ -435,40 +435,28 @@ void CLevelTool::OnFrame()
 
 	if (IsCompilerRunning())
 	{
-		DWORD ExitCode = 0;
-		if (GetExitCodeProcess(m_CompilerProcess.hProcess, &ExitCode) == 0)
+		int ExitCode = 0;
+		if (!m_CompilerProcess.GetExitCode(ExitCode))
 		{
-			Msg("! Cannot return exit code in compiler process (%d).\n", GetLastError());
-			m_CompilerProcess.hProcess = 0;
-
+			Msg("! Cannot return exit code in compiler process.\n");
+			m_CompilerProcess.Close();
 		}
-		else
+		else if (ExitCode != Platform::Process::kStillActive)
 		{
-			if (ExitCode != STILL_ACTIVE)
-			{
-				CloseHandle(m_CompilerProcess.hProcess);
-				CloseHandle(m_CompilerProcess.hThread);
-				m_CompilerProcess.hProcess = 0;
-			}
+			m_CompilerProcess.Close();
 		}
 	}
 	if (IsGameRunning())
 	{
-		DWORD ExitCode = 0;
-		if (GetExitCodeProcess(m_GameProcess.hProcess, &ExitCode) == 0)
+		int ExitCode = 0;
+		if (!m_GameProcess.GetExitCode(ExitCode))
 		{
-			Msg("! Cannot return exit code in compiler process (%d).\n", GetLastError());
-			m_GameProcess.hProcess = 0;
-
+			Msg("! Cannot return exit code of the game process.\n");
+			m_GameProcess.Close();
 		}
-		else
+		else if (ExitCode != Platform::Process::kStillActive)
 		{
-			if (ExitCode != STILL_ACTIVE)
-			{
-				CloseHandle(m_GameProcess.hProcess);
-				CloseHandle(m_GameProcess.hThread);
-				m_GameProcess.hProcess = 0;
-			}
+			m_GameProcess.Close();
 		}
 	}
 }
@@ -727,7 +715,7 @@ void CLevelTool::RunGame(const char* Params)
 	{
 		return;
 	}
-	m_GameProcess = {};
+	m_GameProcess.Close();
 	STARTUPINFOA si = {};
 
 	ZeroMemory(&si, sizeof(si));
@@ -758,10 +746,10 @@ void CLevelTool::RunGame(const char* Params)
 
 void CLevelTool::RunXrLC()
 {
-	if (m_CompilerProcess.hProcess)
+	if (m_CompilerProcess.Valid())
 		return;
 
-	if (m_GameProcess.hProcess)
+	if (m_GameProcess.Valid())
 		return;
 
 	STARTUPINFOA si = {};
@@ -804,10 +792,10 @@ void CLevelTool::RunXrLC()
 }
 void CLevelTool::RunXrDO()
 {
-	if (m_CompilerProcess.hProcess)
+	if (m_CompilerProcess.Valid())
 		return;
 
-	if (m_GameProcess.hProcess)
+	if (m_GameProcess.Valid())
 		return;
 
 	STARTUPINFOA si = {};
@@ -847,10 +835,10 @@ void CLevelTool::RunXrDO()
 }
 void CLevelTool::RunXrAI_Spawn(bool current_level)
 {
-	if (m_CompilerProcess.hProcess)
+	if (m_CompilerProcess.Valid())
 		return;
 
-	if (m_GameProcess.hProcess)
+	if (m_GameProcess.Valid())
 		return;
 
 	STARTUPINFOA si = {};
@@ -890,10 +878,10 @@ void CLevelTool::RunXrAI_Spawn(bool current_level)
 }
 void CLevelTool::RunXrAI_AIMap(bool draw)
 {
-	if (m_CompilerProcess.hProcess)
+	if (m_CompilerProcess.Valid())
 		return;
 
-	if (m_GameProcess.hProcess)
+	if (m_GameProcess.Valid())
 		return;
 
 	STARTUPINFOA si = {};
@@ -934,10 +922,10 @@ void CLevelTool::RunXrAI_AIMap(bool draw)
 }
 void CLevelTool::RunXrAI_Verify()
 {
-	if (m_CompilerProcess.hProcess)
+	if (m_CompilerProcess.Valid())
 		return;
 
-	if (m_GameProcess.hProcess)
+	if (m_GameProcess.Valid())
 		return;
 
 	STARTUPINFOA si = {};
@@ -979,22 +967,22 @@ void CLevelTool::RunXrAI_Verify()
 
 bool CLevelTool::IsCompilerRunning()
 {
-	return m_CompilerProcess.hProcess;
+	return m_CompilerProcess.IsRunning();
 }
 
 bool CLevelTool::IsGameRunning()
 {
-	return m_GameProcess.hProcess;
+	return m_GameProcess.IsRunning();
 }
 
 void CLevelTool::Terminated()
 {
 	if (IsGameRunning())
 	{
-		TerminateProcess(m_GameProcess.hProcess, 1);
+		m_GameProcess.Terminate();
 	}
 	if (IsCompilerRunning())
 	{
-		TerminateProcess(m_CompilerProcess.hProcess, 1);
+		m_CompilerProcess.Terminate();
 	}
 }

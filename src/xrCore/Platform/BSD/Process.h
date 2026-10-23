@@ -119,6 +119,12 @@ namespace Platform
 			return m_exited;
 		}
 
+		void Terminate()
+		{
+			if (m_pid > 0 && !m_exited)
+				kill(m_pid, SIGTERM);
+		}
+
 		void Close()
 		{
 			// A finished process is reaped by GetExitCode/Wait; a running one is detached so it

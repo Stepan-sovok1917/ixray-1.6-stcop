@@ -17,7 +17,7 @@ CLevelMain::CLevelMain()
 	EPrefs = new CLevelPreferences();
 }
 
-CLevelMain::~CLevelMain()
+CLevelMain::~CLevelMain() noexcept
 {
 	xr_delete(EPrefs);
 	xr_delete(m_Cursor);

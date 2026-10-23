@@ -785,72 +785,38 @@ CGitIntegration::SExecResult CGitIntegration::Execute(const xr_string& Arguments
 		return Result;
 	}
 
-	const char* WorkDirectory = WorkDir.empty() ? nullptr : WorkDir.c_str();
-
-	SECURITY_ATTRIBUTES SecurityAttributes{sizeof(SECURITY_ATTRIBUTES), nullptr, TRUE};
-
-	HANDLE StdOutRead = nullptr;
-	HANDLE StdOutWrite = nullptr;
-	if (!CreatePipe(&StdOutRead, &StdOutWrite, &SecurityAttributes, 0))
+	// popen runs the line through the shell, so the working directory is selected with cd and
+	// stderr is folded into the same stream, exactly like the redirected Win32 handles.
+	xr_string CommandLine;
+	if (!WorkDir.empty())
 	{
-		return Result;
+		CommandLine = "cd \"";
+		CommandLine += WorkDir;
+		CommandLine += "\" && ";
 	}
 
-	SetHandleInformation(StdOutRead, HANDLE_FLAG_INHERIT, 0);
+	CommandLine += "git ";
+	CommandLine += Arguments;
+	CommandLine += " 2>&1";
 
-	HANDLE StdInRead = CreateFileA("NUL", GENERIC_READ, FILE_SHARE_READ | FILE_SHARE_WRITE, &SecurityAttributes, OPEN_EXISTING, 0, nullptr);
-
-	STARTUPINFOA StartupInfo{};
-	StartupInfo.cb = sizeof(StartupInfo);
-	StartupInfo.dwFlags = STARTF_USESTDHANDLES | STARTF_USESHOWWINDOW;
-	StartupInfo.wShowWindow = SW_HIDE;
-	StartupInfo.hStdInput = StdInRead;
-	StartupInfo.hStdOutput = StdOutWrite;
-	StartupInfo.hStdError = StdOutWrite;
-
-	PROCESS_INFORMATION ProcessInfo{};
-	xr_string CommandLine = "git.exe " + Arguments;
-
-	BOOL Launched = CreateProcessA(nullptr, CommandLine.data(), nullptr, nullptr, TRUE, CREATE_NO_WINDOW, nullptr, WorkDirectory, &StartupInfo, &ProcessInfo);
-	CloseHandle(StdOutWrite);
-
-	if (!Launched)
+	FILE* Pipe = popen(CommandLine.c_str(), "r");
+	if (Pipe == nullptr)
 	{
-		CloseHandle(StdOutRead);
-		if (StdInRead != INVALID_HANDLE_VALUE)
-		{
-			CloseHandle(StdInRead);
-		}
-
-		Result.Output = "Failed to start git.exe. Make sure git is installed and available in PATH.";
+		Result.Output = "Failed to start git. Make sure git is installed and available in PATH.";
 		return Result;
-	}
-
-	if (StdInRead != INVALID_HANDLE_VALUE)
-	{
-		CloseHandle(StdInRead);
 	}
 
 	std::string Buffer;
 	char Chunk[4096];
-	DWORD Read = 0;
-	while (ReadFile(StdOutRead, Chunk, sizeof(Chunk), &Read, nullptr) && Read > 0)
+	size_t Read = 0;
+	while ((Read = fread(Chunk, 1, sizeof(Chunk), Pipe)) > 0)
 	{
 		Buffer.append(Chunk, Read);
 	}
 
-	CloseHandle(StdOutRead);
-
-	WaitForSingleObject(ProcessInfo.hProcess, INFINITE);
-
-	DWORD ExitCode = 0;
-	GetExitCodeProcess(ProcessInfo.hProcess, &ExitCode);
-	CloseHandle(ProcessInfo.hProcess);
-	CloseHandle(ProcessInfo.hThread);
-
-	Result.ExitCode = static_cast<int>(ExitCode);
-	// NOTE: must preserve embedded NULs: `git status -z` separates entries with '\0'.
-	// Assigning via `const char*` would truncate the output at the first entry.
+	const int Status = pclose(Pipe);
+	Result.ExitCode = (Status == -1) ? -1 : WEXITSTATUS(Status);
+	// NOTE: embedded NULs are meaningful: `git status -z` separates entries with '\0'.
 	Result.Output.assign(Buffer.data(), Buffer.size());
 	return Result;
 }

@@ -114,3 +114,20 @@ namespace Platform
 inline HMODULE LoadLibraryA(const char* name) { return Platform::LoadLibrary(name); }
 inline void* GetProcAddress(HMODULE library, const char* function) { return dlsym(library, function); }
 inline BOOL FreeLibrary(HMODULE library) { Platform::FreeLibrary(library); return TRUE; }
+
+// The editor sources still spell the child-process launch the Win32 way; this forwards it to
+// Platform::Process, so one implementation serves every platform.
+template<typename TStartupInfo>
+inline BOOL CreateProcessA(void*, const char* CommandLine, void*, void*, BOOL, unsigned,
+	void*, const char*, TStartupInfo*, Platform::Process* Process)
+{
+	if (Process == nullptr)
+		return FALSE;
+	return Process->Start(CommandLine) ? TRUE : FALSE;
+}
+
+// Only filled in and never read: Platform::Process decides how the child is started.
+struct STARTUPINFOA
+{
+	unsigned cb;
+};

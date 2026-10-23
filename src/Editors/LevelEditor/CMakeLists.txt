@@ -62,7 +62,9 @@ target_link_libraries(LevelEditor PUBLIC xrEngineCore)
 target_link_libraries(LevelEditor PUBLIC xrScripts)
 target_link_libraries(LevelEditor PUBLIC imgui_node_editor)
 target_link_libraries(LevelEditor PUBLIC xrSE_Factory)
-target_link_libraries(LevelEditor PUBLIC "Shell32.lib")
+if (WIN32)
+    target_link_libraries(LevelEditor PUBLIC "Shell32.lib")
+endif()
 add_dependencies(LevelEditor xrGame)
 
 # Move precompiled header
@@ -76,3 +78,8 @@ target_include_directories(LevelEditor PRIVATE "${SND_OGG}/native/include/")
 target_link_libraries(LevelEditor PRIVATE Vorbis::vorbisfile)
 target_link_libraries(LevelEditor PRIVATE Vorbis::vorbis)
 target_include_directories(LevelEditor PRIVATE "${SND_VOB}/native/include/")
+
+# The file watcher in the content view uses the FSEvents API.
+if (APPLE)
+    target_link_libraries(LevelEditor PRIVATE "-framework CoreFoundation" "-framework CoreServices")
+endif()

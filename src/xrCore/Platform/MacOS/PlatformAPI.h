@@ -9,6 +9,7 @@
 #include "OSMemory.h"
 #include "ComPtr.h"
 
+#include "Event.h"
 #include "Process.h"
 
 #define ENTRY_ARGS int argc, char *argv[]

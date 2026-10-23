@@ -1,6 +1,5 @@
 #include "stdafx.h"
 #include "UITopBarForm.h"
-#include <shellapi.h>
 #include "IconsFontAwesome6.h"
 #include "../xrECore/Editor/imgui_EditorEx.h"
 

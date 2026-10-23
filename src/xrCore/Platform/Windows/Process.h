@@ -71,6 +71,12 @@ namespace Platform
 			return true;
 		}
 
+		void Terminate()
+		{
+			if (m_process != nullptr)
+				::TerminateProcess(m_process, 1);
+		}
+
 		void Close()
 		{
 			if (m_thread != nullptr)
