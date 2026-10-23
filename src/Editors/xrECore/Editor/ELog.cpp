@@ -139,6 +139,12 @@ int CLog::DlgMsg(TMsgDlgType mt, int btn, const char* _Format, ...)
 
 	int res = 0;
 
+	// The alert belongs to this window, and it stays behind other applications otherwise.
+	if (g_AppInfo.Window)
+	{
+		SDL_RaiseWindow(g_AppInfo.Window);
+	}
+
 	res = MessageDlg(buf, mt, btn);
 	if (mtConfirmation == mt)
 	{
@@ -173,6 +179,12 @@ int CLog::DlgMsg (TMsgDlgType mt, const char* _Format, ...)
 	vsprintf( buf, _Format, l );
 
     int res=0;
+
+    // The alert belongs to this window, and it stays behind other applications otherwise.
+    if (g_AppInfo.Window)
+    {
+        SDL_RaiseWindow(g_AppInfo.Window);
+    }
 
     if (mtConfirmation==mt)	res = MessageDlg(buf, mt,  mbYes | mbNo | mbCancel);
 	else if (mtSkip == mt)	res = MessageDlg(buf, mtConfirmation, mbOK | mbSkip);

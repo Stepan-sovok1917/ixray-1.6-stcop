@@ -194,10 +194,8 @@ CCommandVar CommandLoad(CCommandVar p1, CCommandVar p2)
 			FS.r_close(R);
 			LTools->m_LastFileName = temp_fn.c_str();
 
-			LUI->LoaderEvent.run
-			(
-				[temp_fn, is_ltx]
-				{
+			auto DoLoad = [temp_fn, is_ltx]
+			{
 					bool Result = (is_ltx) ? Scene->LoadLTX(temp_fn.c_str(), false) : Scene->Load(temp_fn.c_str(), false);
 
 					if (Result)
@@ -225,8 +223,14 @@ CCommandVar CommandLoad(CCommandVar p1, CCommandVar p2)
 					// update props
 					ExecCommand(COMMAND_UPDATE_PROPERTIES);
 					EContext.UI->RedrawScene();
-				}
-			);
+			};
+
+#if defined(__APPLE__) || defined(IXR_LINUX)
+			// Loading creates device resources, so it stays on the thread that owns the context.
+			DoLoad();
+#else
+			LUI->LoaderEvent.run(DoLoad);
+#endif
 		}
 
 		return true;
