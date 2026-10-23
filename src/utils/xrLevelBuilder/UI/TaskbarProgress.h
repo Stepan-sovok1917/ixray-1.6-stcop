@@ -1,5 +1,9 @@
 #pragma once
 
+// The taskbar progress indicator exists only on Windows; other platforms get the same
+// interface with empty bodies so the callers stay unchanged.
+#ifdef IXR_WINDOWS
+
 #include <Windows.h>
 #include <ShObjIdl.h>
 #include <string>
@@ -72,3 +76,40 @@ private:
 	HICON GetIconForOverlay(TaskbarOverlay overlay) const;
 	// <<< UX-PROGRESS
 };
+#else
+enum : int // taskbar progress states, mirroring the Windows values
+{
+	TBPF_NOPROGRESS = 0x0,
+	TBPF_INDETERMINATE = 0x1,
+	TBPF_NORMAL = 0x2,
+	TBPF_ERROR = 0x4,
+	TBPF_PAUSED = 0x8
+};
+
+enum class TaskbarOverlay : int
+{
+	None = 0,
+	XrLC,
+	XrAI,
+	XrDO,
+	Success,
+	Error
+};
+
+class CTaskbarProgress
+{
+public:
+	bool Initialize(void*) { return false; }
+	void Release() {}
+	void SetState(int) {}
+	void SetProgress(unsigned long long, unsigned long long) {}
+	void SetMarquee(bool) {}
+	void Reset() {}
+	void SetTooltip(const std::wstring&) {}
+	void SetOverlayIcon(void*, const std::wstring&) {}
+	void SetOverlayIcon(TaskbarOverlay, const std::wstring&) {}
+	bool IsInitialized() const { return false; }
+	static CTaskbarProgress& Instance() { static CTaskbarProgress instance; return instance; }
+};
+
+#endif

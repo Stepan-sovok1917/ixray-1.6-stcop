@@ -4,7 +4,6 @@
 #include "UI/CompilersUI.h"
 
 #include <imgui.h>
-#include <timeapi.h>
 
 #include "../../Editors/xrEUI/imgui_impl_sdl3.h"
 #include "UI/imgui_impl_sdlrenderer3.h"

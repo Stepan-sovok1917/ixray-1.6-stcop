@@ -39,7 +39,8 @@ void StartupLC()
 		{
 			xr_sprintf(inf, "Build failed!\n! Can't find level: '%s'", Name.data());
 			clMsg(inf);
-			MessageBoxA(nullptr, inf, "Error!", MB_OK | MB_ICONERROR);
+			// The engine sources report through SDL so the same line works everywhere.
+			SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "Error!", inf, nullptr);
 			return;
 		}
 

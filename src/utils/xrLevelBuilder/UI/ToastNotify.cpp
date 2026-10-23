@@ -162,6 +162,7 @@ bool CToastNotify::ShowFallback(const std::wstring& title, const std::wstring& m
 		{
 			return {};
 		}
+#if defined(IXR_WINDOWS)
 		const int size = WideCharToMultiByte(CP_UTF8, 0, w.c_str(), (int)w.size(), nullptr, 0, nullptr, nullptr);
 		if (size <= 0)
 		{
@@ -170,6 +171,37 @@ bool CToastNotify::ShowFallback(const std::wstring& title, const std::wstring& m
 		std::string out(size, '\0');
 		WideCharToMultiByte(CP_UTF8, 0, w.c_str(), (int)w.size(), out.data(), size, nullptr, nullptr);
 		return out;
+#else
+		// wchar_t is UTF-32 outside Windows, so the code points are encoded directly.
+		std::string out;
+		for (wchar_t wide : w)
+		{
+			const uint32_t cp = (uint32_t)wide;
+			if (cp < 0x80)
+			{
+				out += (char)cp;
+			}
+			else if (cp < 0x800)
+			{
+				out += (char)(0xC0 | (cp >> 6));
+				out += (char)(0x80 | (cp & 0x3F));
+			}
+			else if (cp < 0x10000)
+			{
+				out += (char)(0xE0 | (cp >> 12));
+				out += (char)(0x80 | ((cp >> 6) & 0x3F));
+				out += (char)(0x80 | (cp & 0x3F));
+			}
+			else
+			{
+				out += (char)(0xF0 | (cp >> 18));
+				out += (char)(0x80 | ((cp >> 12) & 0x3F));
+				out += (char)(0x80 | ((cp >> 6) & 0x3F));
+				out += (char)(0x80 | (cp & 0x3F));
+			}
+		}
+		return out;
+#endif
 	};
 
 	const std::string TitleU8 = ToUtf8(title);

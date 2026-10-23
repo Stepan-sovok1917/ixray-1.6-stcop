@@ -4,7 +4,6 @@
 #include "CompilersUI.h"
 #include "../Common/cl_log.h"
 #include "GameLevelsRegistry.h"
-#include <timeapi.h>
 #include <algorithm>
 
 #include "xrLevel.h"

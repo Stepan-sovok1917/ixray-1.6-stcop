@@ -10,7 +10,11 @@ endif()
 # Engine Utils
 if(IXRAY_UTILS AND NOT IXRAY_COMPRESSOR_ONLY)
     add_subdirectory("xrDXT")
-    add_subdirectory("xrLevelBuilder")
+    # The level builder is still a Windows program: its front-end is a Win32 dialog shell
+    # and its light compiler links the Windows runtimes of Embree.
+    if (WIN32)
+        add_subdirectory("xrLevelBuilder")
+    endif()
     add_subdirectory("xrSE_Factory")
     add_subdirectory("TextureCloner")
     add_subdirectory("efc")
@@ -37,7 +41,9 @@ if(IXRAY_UTILS AND NOT IXRAY_COMPRESSOR_ONLY)
     set_target_properties(xrDXT PROPERTIES ${IXRAY_FOLDER_UTILS})
     set_target_properties(EFC PROPERTIES ${IXRAY_FOLDER_UTILS})
     set_target_properties(xrSE_Factory PROPERTIES ${IXRAY_FOLDER_UTILS})
-    set_target_properties(xrLevelBuilder PROPERTIES ${IXRAY_FOLDER_UTILS})
+    if (TARGET xrLevelBuilder)
+        set_target_properties(xrLevelBuilder PROPERTIES ${IXRAY_FOLDER_UTILS})
+    endif()
     set_target_properties(TextureCloner PROPERTIES ${IXRAY_FOLDER_UTILS})
     set_target_properties(xrLevelFilesConverter PROPERTIES ${IXRAY_FOLDER_UTILS})
 

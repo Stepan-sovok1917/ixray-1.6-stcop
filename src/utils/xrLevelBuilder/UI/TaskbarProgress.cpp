@@ -1,3 +1,4 @@
+#ifdef IXR_WINDOWS // Windows taskbar integration; the header supplies a stub elsewhere.
 #include "TaskbarProgress.h"
 
 #include "../../../xrCore/xrCore.h"
@@ -265,3 +266,5 @@ void CTaskbarProgress::SetOverlayIcon(TaskbarOverlay overlay, const std::wstring
 }
 
 // <<< UX-PROGRESS
+
+#endif
