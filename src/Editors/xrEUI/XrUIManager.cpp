@@ -348,7 +348,6 @@ void XrUIManager::Draw()
 
 		ImGui::Begin("MyDockspace", NULL, window_flags);
 		const ImGuiID DockspaceId = ImGui::GetID("MyDockspace");
-		ImGui::DockSpace(DockspaceId);
 		// A fresh profile has no saved layout, and then every panel opens as a floating
 		// window on top of the others; place them once.
 		if (ImGui::DockBuilderGetNode(DockspaceId) == nullptr)
@@ -366,6 +365,7 @@ void XrUIManager::Draw()
 			ImGui::DockBuilderDockWindow("Error Collector", BottomId);
 			ImGui::DockBuilderFinish(DockspaceId);
 		}
+		ImGui::DockSpace(DockspaceId);
 		ImGui::End();
 
 		ImGui::PopStyleColor(2); // Border, WindowBG
