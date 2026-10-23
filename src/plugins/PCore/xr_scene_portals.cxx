@@ -39,7 +39,7 @@ void xr_portal_object::save_v12(xr_ini_writer* w) const
 	w->write("sector_back", this->m_sector_back, false);
 	w->write("sector_front", this->m_sector_front, false);
 
-	w->write("vert_count", this->m_vertices.size());
+	w->write("vert_count", (uint64_t)(uint64_t)this->m_vertices.size());
 	w->w_ini_seq(m_vertices, "vertex");
 }
 
@@ -85,7 +85,7 @@ void xr_scene_portals::save_v12(xr_ini_writer* w) const
 {
 	w->open_section("main");
 	w->write("flags", this->m_flags);
-	w->write("objects_count", this->objects().size());
+	w->write("objects_count", (uint64_t)this->objects().size());
 	w->write("version", 0);
 	w->close_section();
 

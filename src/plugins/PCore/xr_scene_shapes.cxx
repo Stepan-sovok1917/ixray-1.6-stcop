@@ -92,7 +92,7 @@ void xr_shape_object::save_v12(xr_ini_writer* w) const
 	w->write("shape_type", 0);
 
 	w->w_ini_seq(m_shapes, write_shape_ini());
-	w->write("shapes_count", m_shapes.size());
+	w->write("shapes_count", (uint64_t)m_shapes.size());
 
 	w->write("version", SHAPE_VERSION_V12);
 }
@@ -124,7 +124,7 @@ void xr_scene_shapes::save(xr_writer& w) const
 void xr_scene_shapes::save_v12(xr_ini_writer* w) const
 {
 	w->open_section("main");
-	w->write("objects_count", this->objects().size());
+	w->write("objects_count", (uint64_t)this->objects().size());
 	w->write("version", 0);
 	w->close_section();
 

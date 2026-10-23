@@ -131,7 +131,7 @@ void xr_scene_sound_srcs::save(xr_writer& w) const
 void xr_scene_sound_srcs::save_v12(xr_ini_writer* w) const
 {
 	w->open_section("main");
-	w->write("objects_count", this->objects().size());
+	w->write("objects_count", (uint64_t)this->objects().size());
 	w->write("version", 0);
 	w->close_section();
 

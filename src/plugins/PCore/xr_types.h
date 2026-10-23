@@ -73,6 +73,31 @@ const uint32_t UINT_FAST32_MAX = UINT32_MAX;
 #	define PRIuSIZET "zu"
 #endif
 
+// The C library spellings of the MSVC secure-CRT functions.
+#include <cstdio>
+#include <cstdarg>
+#include <cstring>
+#include <strings.h>
+#include <cctype>
+
+static inline int sprintf_s(char* buffer, size_t size, const char* format, ...)
+{
+	va_list args;
+	va_start(args, format);
+	const int result = vsnprintf(buffer, size, format, args);
+	va_end(args);
+	return result;
+}
+
+static inline int sscanf_s(const char* buffer, const char* format, ...)
+{
+	va_list args;
+	va_start(args, format);
+	const int result = vsscanf(buffer, format, args);
+	va_end(args);
+	return result;
+}
+
 #endif
 
 const uint32_t BAD_IDX = UINT32_MAX;

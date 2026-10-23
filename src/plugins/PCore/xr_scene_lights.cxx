@@ -235,8 +235,8 @@ void xr_scene_lights::save_v12(xr_ini_writer* w) const
 
 	w->open_section("main");
 	w->write("flags", this->m_flags);
-	w->write("lcontrol_last_idx", this->m_controls.size());
-	w->write("objects_count", this->objects().size());
+	w->write("lcontrol_last_idx", (uint64_t)(uint64_t)this->m_controls.size());
+	w->write("objects_count", (uint64_t)this->objects().size());
 	w->write("sun_shadow_dir", this->m_sun);
 	w->write("version", 0);
 	w->close_section();

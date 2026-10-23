@@ -79,7 +79,7 @@ void xr_sector_object::save_v12(xr_ini_writer* w) const
 	w->write("default", this->m_private ? "on" : "off");
 
 	w->w_ini_seq(this->m_items, write_ini_item());
-	w->write("items_count", this->m_items.size());
+	w->write("items_count", (uint64_t)this->m_items.size());
 	w->write("version", SECTOR_VERSION_V12);
 }
 
@@ -110,7 +110,7 @@ void xr_scene_sectors::save_v12(xr_ini_writer* w) const
 {
 	w->open_section("main");
 	w->write("flags", this->m_flags);
-	w->write("objects_count", this->objects().size());
+	w->write("objects_count", (uint64_t)this->objects().size());
 	w->write("version", 0);
 	w->close_section();
 

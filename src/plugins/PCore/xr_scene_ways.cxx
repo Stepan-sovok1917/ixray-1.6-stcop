@@ -126,7 +126,7 @@ void xr_way_object::save_v12(xr_ini_writer* w) const
 	// write waypoints
 
 	w->w_ini_seq(this->m_points, write_point_ini());
-	w->write("wp_count", this->m_points.size());
+	w->write("wp_count", (uint64_t)this->m_points.size());
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -153,7 +153,7 @@ void xr_scene_ways::save(xr_writer& w) const
 void xr_scene_ways::save_v12(xr_ini_writer* w) const
 {
 	w->open_section("main");
-	w->write("objects_count", this->objects().size());
+	w->write("objects_count", (uint64_t)this->objects().size());
 	w->write("version", 0);
 	w->close_section();
 

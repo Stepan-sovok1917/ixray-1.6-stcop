@@ -113,14 +113,14 @@ void xr_scene_visuals::save_v12(xr_ini_writer* w) const
 	w->write("AppendRandomMaxScale", m_max_scale);
 	w->write("AppendRandomMinRotation", m_min_rotate);
 	w->write("AppendRandomMinScale", m_min_scale);
-	w->write("AppendRandomObjects_size", m_snap_objects.size());
+	w->write("AppendRandomObjects_size", (uint64_t)m_snap_objects.size());
 
 	w->close_section();
 
 	w->open_section("main");
 	w->write("flags", this->m_flags);
 	w->write("version", 0);
-	w->write("objects_count", this->objects().size());
+	w->write("objects_count", (uint64_t)this->objects().size());
 	w->close_section();
 
 	scene().write_revision(w);

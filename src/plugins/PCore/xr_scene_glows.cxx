@@ -97,7 +97,7 @@ void xr_scene_glows::save_v12(xr_ini_writer* w) const
 	w->open_section("main");
 	w->write("flags", this->m_flags);
 	w->write("glow_tool_version", 0);
-	w->write("objects_count", this->objects().size());
+	w->write("objects_count", (uint64_t)this->objects().size());
 	w->close_section();
 
 	scene().write_revision(w);

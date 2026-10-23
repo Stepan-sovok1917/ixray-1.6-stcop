@@ -133,16 +133,28 @@ static int RunEditor(const char* pCmdLine)
 	splash::SetProgressStatus(85, "Initializing UI");
 	EContext.UI->PushBegin(MainForm, false);
 	splash::SetProgressStatus(90, "Processing Command-Line Arguments");
-	int ArgsCount = 0;
-	auto Commands = CommandLineToArgvW(GetCommandLine(), &ArgsCount);
-
-	if (ArgsCount > 1)
+	// The first token of the command line is the file to open: dragging an .object onto the
+	// editor passes it this way on every platform.
+	xr_string SecondArg;
 	{
-		xr_string SecondArg = Platform::UTF8_to_CP1251(Platform::TCHAR_TO_ANSI_U8(Commands[1]));
-		if (SecondArg.ends_with(".object"))
+		const char* p = pCmdLine;
+		while (*p == ' ' || *p == '\t') ++p;
+		if (*p == '"')
 		{
-			ExecCommand(COMMAND_LOAD, SecondArg);
+			++p;
+			while (*p != 0 && *p != '"')
+				SecondArg += *p++;
 		}
+		else
+		{
+			while (*p != 0 && *p != ' ' && *p != '\t')
+				SecondArg += *p++;
+		}
+	}
+
+	if (!SecondArg.empty() && SecondArg.ends_with(".object"))
+	{
+		ExecCommand(COMMAND_LOAD, SecondArg);
 	}
 
 	splash::SetProgressStatus(100, "Finalizing");

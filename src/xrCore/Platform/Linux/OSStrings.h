@@ -465,3 +465,11 @@ IC char* _strlwr_s(char* strDestination, size_t sizeInBytes)
 {
     return _strlwr(strDestination);
 }
+
+IC char* _strupr_s(char* strDestination, size_t sizeInBytes)
+{
+    (void)sizeInBytes;
+    for (char* it = strDestination; *it != 0; ++it)
+        *it = (char)toupper((unsigned char)*it);
+    return strDestination;
+}
