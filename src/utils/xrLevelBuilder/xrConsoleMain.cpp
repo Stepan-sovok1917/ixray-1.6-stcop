@@ -66,6 +66,43 @@ int main(int argc, char** argv)
 	Serializer = new CJsonSerializer("xrlevelbuilder.json");
 	LoadCompilerSettings();
 
+	// The window build picks the level in a list; the console takes it from "-f <level>" and
+	// keeps it where the progress messages read it from.
+	{
+		const char* LevelSwitch = strstr(CommandLine.c_str(), "-f ");
+		if (LevelSwitch != nullptr)
+		{
+			xr_string LevelName = LevelSwitch + 3;
+			const size_t Space = LevelName.find(' ');
+			if (Space != xr_string::npos)
+			{
+				LevelName.resize(Space);
+			}
+
+			gCompilerMode.Files.push_back({LevelName.c_str(), true});
+		}
+	}
+
+	// The window build selects the phases with checkboxes; here they come from the command line.
+	{
+		const bool WantsLC = strstr(CommandLine.c_str(), "-lc") != nullptr;
+		const bool WantsAI = strstr(CommandLine.c_str(), "-ai") != nullptr;
+		const bool WantsDO = strstr(CommandLine.c_str(), "-do") != nullptr;
+
+		if (WantsLC || WantsAI || WantsDO)
+		{
+			gCompilerMode.LC = WantsLC;
+			gCompilerMode.AI = WantsAI;
+			gCompilerMode.DO = WantsDO;
+		}
+		else
+		{
+			// A level without phase switches is built completely.
+			const bool HasLevel = strstr(CommandLine.c_str(), "-f ") != nullptr;
+			gCompilerMode.LC = gCompilerMode.AI = gCompilerMode.DO = HasLevel;
+		}
+	}
+
 	// No window here: the phases run right away and report on the console and in the log.
 	LoadSelectedLevels();
 	Startup((LPSTR)CommandLine.c_str());
