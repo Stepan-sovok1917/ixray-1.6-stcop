@@ -1,5 +1,6 @@
 #pragma once
 #include <dlfcn.h>
+#include <string>
 #include <alloca.h>
 #include <malloc/malloc.h>
 #include <mach-o/dyld.h>
@@ -17,41 +18,46 @@ namespace Platform
 {
     inline HMODULE LoadLibrary(const char* Name)
     {
-        char Path[256] = {};
-        strcpy(Path, Name);
-        strcat(Path, ".dylib");
-
-        snprintf(Path, sizeof(Path), "%s.dylib", Name);
-        void* module = dlopen(Path, RTLD_NOW | RTLD_GLOBAL);
-        if (module == nullptr)
+        // Callers pass names with or without the "lib" prefix and the ".dylib" suffix, and
+        // macOS never searches the directory of the executable on its own, so the name is
+        // normalised and every reasonable location is tried.
+        std::string Base = Name;
+        if (Base.size() > 6 && Base.compare(Base.size() - 6, 6, ".dylib") == 0)
         {
-            snprintf(Path, sizeof(Path), "lib%s.dylib", Name);
-            module = dlopen(Path, RTLD_NOW | RTLD_GLOBAL);
-            if (module == nullptr)
+            Base.resize(Base.size() - 6);
+        }
+        if (Base.rfind("lib", 0) == 0)
+        {
+            Base = Base.substr(3);
+        }
+
+        char ExecPath[PATH_MAX] = {};
+        uint32_t ExecPathSize = sizeof(ExecPath);
+        _NSGetExecutablePath(ExecPath, &ExecPathSize);
+        if (char* Slash = strrchr(ExecPath, '/'))
+        {
+            *Slash = '\0';
+        }
+
+        const std::string Candidates[] =
+        {
+            std::string(Name),
+            std::string(ExecPath) + "/" + Name,
+            std::string(ExecPath) + "/lib" + Base + ".dylib",
+            std::string(ExecPath) + "/" + Base + ".dylib",
+            "lib" + Base + ".dylib",
+            Base + ".dylib",
+        };
+
+        for (const std::string& Candidate : Candidates)
+        {
+            if (void* Module = dlopen(Candidate.c_str(), RTLD_NOW | RTLD_GLOBAL))
             {
-                printf("%s\n", strerror(errno));
-
-                char exec_path[PATH_MAX] = {};
-                uint32_t exec_path_size = sizeof(exec_path);
-                _NSGetExecutablePath(exec_path, &exec_path_size);
-
-                int start_of_filename = strlen(exec_path);
-                while (start_of_filename > 0 && exec_path[start_of_filename] != '/') {
-                    exec_path[start_of_filename--] = '\0';
-                }
-                exec_path[start_of_filename--] = '\0';
-
-                snprintf(Path, sizeof(Path), "%s/%s.dylib", exec_path, Name);
-                module = dlopen(Path, RTLD_NOW | RTLD_GLOBAL);
-                if (module == nullptr)
-                {
-                    snprintf(Path, sizeof(Path), "%s/lib%s.dylib", exec_path, Name);
-                    module = dlopen(Path, RTLD_NOW | RTLD_GLOBAL);
-                }
+                return Module;
             }
         }
 
-        return module;
+        return nullptr;
     }
 
     inline void* GetAddress(HMODULE Library, const char* Function)
