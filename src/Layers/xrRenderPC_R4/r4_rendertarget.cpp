@@ -546,6 +546,12 @@ CRenderTarget::CRenderTarget()
 	CRT::CRTCreationFlags isUAV = RFeatureLevel >= D3D_FEATURE_LEVEL_11_0 ? CRT::USE_UAV_FLAG : (CRT::CRTCreationFlags)NULL;
 
 	u32 s_dwWidth = (u32)RCache.get_width(), s_dwHeight = (u32)RCache.get_height();
+	// The targets are built while the device starts, before any viewport exists.
+	if (s_dwWidth == 0 || s_dwHeight == 0)
+	{
+		s_dwWidth = Device.TargetWidth;
+		s_dwHeight = Device.TargetHeight;
+	}
 
 	// The editor viewport is not the window: depth has to match the viewport targets
 	if (Device.IsEditorMode())

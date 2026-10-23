@@ -622,6 +622,9 @@ void CEditorRenderDevice::CreateWindow()
 		Width = DisplayX;
 		Height = DisplayY;
 	}
+
+	TargetWidth = Width;
+	TargetHeight = Height;
 }
 
 void CEditorRenderDevice::DestryWindow()
