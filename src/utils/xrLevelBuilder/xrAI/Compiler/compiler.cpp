@@ -3,13 +3,13 @@
 
 IComputeData comp_data;
 Nodes g_nodes;
-SAIParams g_params;
+SAIParams g_ai_params;
 
 void vertex::PointLF(Fvector& D)
 {
 	Fvector	d;	d.set(0,-1,0);
 	Fvector	v	= Pos;	
-	float	s	= g_params.fPatchSize/2;
+	float	s	= g_ai_params.fPatchSize/2;
 	v.x			-= s;
 	v.z			+= s;
 	Plane.intersectRayPoint(v,d,D);
@@ -19,7 +19,7 @@ void vertex::PointFR(Fvector& D)
 {
 	Fvector	d;	d.set(0,-1,0);
 	Fvector	v	= Pos;	
-	float	s	= g_params.fPatchSize/2;
+	float	s	= g_ai_params.fPatchSize/2;
 	v.x			+= s;
 	v.z			+= s;
 	Plane.intersectRayPoint(v,d,D);
@@ -29,7 +29,7 @@ void vertex::PointRB(Fvector& D)
 {
 	Fvector	d;	d.set(0,-1,0);
 	Fvector	v	= Pos;	
-	float	s	= g_params.fPatchSize/2;
+	float	s	= g_ai_params.fPatchSize/2;
 	v.x			+= s;
 	v.z			-= s;
 	Plane.intersectRayPoint(v,d,D);
@@ -39,7 +39,7 @@ void vertex::PointBL(Fvector& D)
 {
 	Fvector	d;	d.set(0,-1,0);
 	Fvector	v	= Pos;	
-	float	s	= g_params.fPatchSize/2;
+	float	s	= g_ai_params.fPatchSize/2;
 	v.x			-= s;
 	v.z			-= s;
 	Plane.intersectRayPoint(v,d,D);

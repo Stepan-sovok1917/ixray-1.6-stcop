@@ -10,11 +10,7 @@ endif()
 # Engine Utils
 if(IXRAY_UTILS AND NOT IXRAY_COMPRESSOR_ONLY)
     add_subdirectory("xrDXT")
-    # The level builder is still a Windows program: its front-end is a Win32 dialog shell
-    # and its light compiler links the Windows runtimes of Embree.
-    if (WIN32)
-        add_subdirectory("xrLevelBuilder")
-    endif()
+    add_subdirectory("xrLevelBuilder")
     add_subdirectory("xrSE_Factory")
     add_subdirectory("TextureCloner")
     add_subdirectory("efc")

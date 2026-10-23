@@ -3,6 +3,12 @@
 #include "xrLC_GlobalData.h"
 #include "../Mesh/xrFace.h"
 
+#if defined(IXR_WINDOWS)
+#include <ppl.h>
+#else
+#include "../../Common/Concurrency.h"
+#endif
+
 extern void		Detach		(vecFace* S);
 
 struct _counter

@@ -4,7 +4,11 @@
 #include "../Mesh/xrFace.h"
 
 #include <thread>
+#if defined(IXR_WINDOWS)
 #include <ppl.h>
+#else
+#include "../../Common/Concurrency.h"
+#endif
 
 // Stuff For need
 void MakeCube(Fbox& BB_dest, const Fbox& BB_src)

@@ -152,7 +152,7 @@ void xrSaveNodes(const char* N, const char* out_name)
 	hdrNODES H;
 	H.version = XRAI_CURRENT_VERSION - (E_AIMAP_VERSION - BuildAIMapVersion);
 	H.count = g_nodes.size();
-	H.size = g_params.fPatchSize;
+	H.size = g_ai_params.fPatchSize;
 	H.size_y = CalculateHeight(H.aabb);
 	H.guid = generate_guid();
 	fs->w(&H, sizeof(H));

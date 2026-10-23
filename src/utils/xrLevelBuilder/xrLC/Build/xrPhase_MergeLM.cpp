@@ -8,7 +8,11 @@
 #include "xrLC_GlobalData.h"
 #include "../Light/Lightmap.h"
 #include "../../UI/CompilersUI.h"
+#if defined(IXR_WINDOWS)
 #include <ppl.h>
+#else
+#include "../../Common/Concurrency.h"
+#endif
 
 extern CompilersMode gCompilerMode;
 

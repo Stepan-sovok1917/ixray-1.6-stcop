@@ -117,7 +117,19 @@ list(APPEND XLC_SOURCE_FILES ${XLC_SOURCE_EDITOR_PUBLIC_FILES})
 list(APPEND XAI_SOURCE_FILES ${XAI_SOURCE_ENTT_FILES})
 
 # xrLevelBuilder project
-add_executable(xrLevelBuilder WIN32 ${UTILS_FORMS_SOURCE_FILES} ${XLC_SOURCE_FILES} ${XAI_SOURCE_FILES})
+# The window front-end exists on Windows; elsewhere the same phases run in a console program.
+if (WIN32)
+    list(FILTER UTILS_FORMS_SOURCE_FILES EXCLUDE REGEX "xrConsoleMain\\.cpp$")
+else()
+    list(FILTER UTILS_FORMS_SOURCE_FILES EXCLUDE REGEX "xrForms\\.cpp$")
+endif()
+
+add_executable(xrLevelBuilder ${UTILS_FORMS_SOURCE_FILES} ${XLC_SOURCE_FILES} ${XAI_SOURCE_FILES})
+
+if (WIN32)
+    set_target_properties(xrLevelBuilder PROPERTIES WIN32_EXECUTABLE TRUE)
+endif()
+
 target_include_directories(xrLevelBuilder PRIVATE
     "${CMAKE_CURRENT_SOURCE_DIR}"
     "${CMAKE_CURRENT_SOURCE_DIR}/../../xrCore/"
@@ -126,8 +138,11 @@ target_include_directories(xrLevelBuilder PRIVATE
     "${IXRAY_SDK_INC}"
     "${XLB_PACKAGES}/directxmesh_desktop_2019.2024.6.5.1/include/"
     "${XLB_PACKAGES}/ImeSense.Packages.Zlib.1.2.13.1/native/include/"
-    "${XLB_EMBREE}/build/native/include/"
 )
+
+if (WIN32)
+    target_include_directories(xrLevelBuilder PRIVATE "${XLB_EMBREE}/build/native/include/")
+endif()
 target_link_directories(xrLevelBuilder PRIVATE "${IXRAY_SDK_LIB}/")
 target_compile_definitions(xrLevelBuilder PRIVATE AI_COMPILER)
 
@@ -249,6 +264,20 @@ if (WIN32)
         "${XLB_PACKAGES}/ImeSense.Packages.Zlib.1.2.13.1/native/lib/${CMAKE_VS_PLATFORM_NAME}/Release/zlib.lib"
         "${XLB_EMBREE}/runtimes/win-x64/native/Release/embree4.lib"
     )
+else()
+    # Embree ships for every platform; outside Windows it comes from the system.
+    find_path(IXR_EMBREE_INCLUDE_DIR embree4/rtcore.h
+        HINTS /opt/homebrew/include /usr/local/include /usr/include)
+    find_library(IXR_EMBREE_LIBRARY NAMES embree4
+        HINTS /opt/homebrew/lib /usr/local/lib /usr/lib)
+
+    if (NOT IXR_EMBREE_INCLUDE_DIR OR NOT IXR_EMBREE_LIBRARY)
+        message(FATAL_ERROR "Embree 4 was not found. Install it (brew install embree) or set "
+                            "IXR_EMBREE_INCLUDE_DIR and IXR_EMBREE_LIBRARY.")
+    endif()
+
+    target_include_directories(xrLevelBuilder PRIVATE ${IXR_EMBREE_INCLUDE_DIR})
+    target_link_libraries(xrLevelBuilder PRIVATE ${IXR_EMBREE_LIBRARY})
 endif()
 
 if (WIN32)
@@ -256,6 +285,8 @@ if (WIN32)
     target_link_libraries(xrLevelBuilder PRIVATE WindowsSDK::WinMM)
 endif()
 
-add_custom_command(TARGET xrLevelBuilder POST_BUILD
-    COMMAND ${CMAKE_COMMAND} -E copy_if_different "${XLB_EMBREE}/runtimes/win-x64/native/Release/embree4.dll" "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/$<CONFIG>/"
-)
+if (WIN32)
+    add_custom_command(TARGET xrLevelBuilder POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E copy_if_different "${XLB_EMBREE}/runtimes/win-x64/native/Release/embree4.dll" "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/$<CONFIG>/"
+    )
+endif()

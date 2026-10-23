@@ -18,7 +18,11 @@
 #include "xr_graph_merge.h"
 #include "../Spawn/level_spawn_constructor.h"
 #include "game_graph_builder.h"
+#if defined(IXR_WINDOWS)
 #include <direct.h>
+#else
+#include <sys/stat.h>
+#endif
 #include <random>
 
 #include "../../../../xrCore/Save/SaveManager.h"
@@ -541,7 +545,11 @@ const char* generate_temp_file_name	(const char* header0, const char* header1, s
 	FS.update_path		(path,"$app_data_root$","temp");
 	xr_strcat			(path,sizeof(path),"\\");
 
+#if defined(IXR_WINDOWS)
 	_mkdir				(path);
+#else
+	mkdir				(path, 0777);
+#endif
 	
 	xr_strconcat(buffer,path,header0,header1);
 	return				(buffer);

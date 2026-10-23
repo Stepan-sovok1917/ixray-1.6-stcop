@@ -3,7 +3,9 @@
 #include "OGF_Face.h"
 #include "NvTriStrip.h"
 #include "VertexCache.h"
+#if defined(IXR_WINDOWS)
 #include <DirectXMesh.h>
+#endif
 #include "../../UI/CompilersUI.h"
 
 int xrSimulate (xr_vector<u16> &indices, int iCacheSize )
@@ -66,6 +68,7 @@ void OGF::Stripify()
 	// fast verts
 	if (!fast_path_data.vertices.empty() && !fast_path_data.faces.empty())
 	{
+#if defined(IXR_WINDOWS)
 		// Optimize face order
 		{
 			xr_vector<u32> remap(fast_path_data.faces.size());
@@ -86,6 +89,9 @@ void OGF::Stripify()
 			}
 		}
 
+#endif
+
+#if defined(IXR_WINDOWS)
 		// Optimize vertex order
 		{
 			xr_vector<u32> remap(fast_path_data.vertices.size());
@@ -114,6 +120,7 @@ void OGF::Stripify()
 				}
 			}
 		}
+#endif
 	}
 
 	if (!gCompilerMode.LC_OGF_STRIPTIFY)			return;

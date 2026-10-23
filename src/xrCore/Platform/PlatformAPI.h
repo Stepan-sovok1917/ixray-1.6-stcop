@@ -109,11 +109,42 @@ namespace Platform
 // equivalents are plain POSIX or SDL calls.
 #include <SDL3/SDL.h>
 #include <dlfcn.h>
+#if defined(__APPLE__)
+#include <mach/mach.h>
+#include <mach/vm_statistics.h>
+#endif
 #include <unistd.h>
 
 inline HMODULE LoadLibraryA(const char* name) { return Platform::LoadLibrary(name); }
 inline void* GetProcAddress(HMODULE library, const char* function) { return dlsym(library, function); }
 inline BOOL FreeLibrary(HMODULE library) { Platform::FreeLibrary(library); return TRUE; }
+
+
+// Only the committed memory figure is used by the compilers, and only for logging.
+inline void vminfo(unsigned long* Total, unsigned long* Free, unsigned long* Used)
+{
+#if defined(__APPLE__)
+	vm_statistics64_data_t Stats = {};
+	mach_msg_type_number_t Count = HOST_VM_INFO64_COUNT;
+	vm_size_t PageSize = 0;
+	host_page_size(mach_host_self(), &PageSize);
+	if (host_statistics64(mach_host_self(), HOST_VM_INFO64, (host_info64_t)&Stats, &Count) == KERN_SUCCESS)
+	{
+		const unsigned long long InUse = ((unsigned long long)Stats.active_count + Stats.inactive_count + Stats.wire_count) * PageSize;
+		*Used = (unsigned long)(InUse / 1024);
+	}
+	*Total = 0;
+	*Free = 0;
+#else
+	*Total = 0;
+	*Free = 0;
+	*Used = 0;
+#endif
+}
+
+// Win32 spellings still used by the tool sources.
+using WORD = unsigned short;
+using LPWORD = WORD*;
 
 // The editor sources still spell the child-process launch the Win32 way; this forwards it to
 // Platform::Process, so one implementation serves every platform.

@@ -155,6 +155,12 @@ void CToastNotify::Shutdown()
 
 bool CToastNotify::ShowFallback(const std::wstring& title, const std::wstring& message)
 {
+	if (Silent)
+	{
+		clMsg("* ToastNotify: '%ls' / '%ls'", title.c_str(), message.c_str());
+		return true;
+	}
+
 	// SDL3 требует UTF-8.
 	auto ToUtf8 = [](const std::wstring& w) -> std::string
 	{

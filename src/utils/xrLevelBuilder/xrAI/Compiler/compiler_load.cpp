@@ -53,7 +53,7 @@ void xrLoad(const char* name, bool draft_mode, bool skipThm)
 		F->r(&LevelBB, sizeof(LevelBB));
 
 		R_ASSERT(F->open_chunk(E_AIMAP_CHUNK_PARAMS));
-		F->r(&g_params, sizeof(g_params));
+		F->r(&g_ai_params, sizeof(g_ai_params));
 
 		R_ASSERT(F->open_chunk(E_AIMAP_CHUNK_NODES));
 		u32 N_ = F->r_u32();
@@ -65,7 +65,7 @@ void xrLoad(const char* name, bool draft_mode, bool skipThm)
 		hdrNODES H;
 		H.version = XRAI_CURRENT_VERSION - (E_AIMAP_VERSION - version);
 		H.count = N_ + 1;
-		H.size = g_params.fPatchSize;
+		H.size = g_ai_params.fPatchSize;
 		H.size_y = 1.f;
 		H.aabb = LevelBB;
 
@@ -103,7 +103,7 @@ void xrLoad(const char* name, bool draft_mode, bool skipThm)
 			pvDecompress(g_nodes[i].Plane.n, pl);
 			F->r(&_np, sizeof(_np));
 			CNodePositionConverter(_np, H, np);
-			g_nodes[i].Pos = vertex_position(np, LevelBB, g_params);
+			g_nodes[i].Pos = vertex_position(np, LevelBB, g_ai_params);
 			g_nodes[i].Plane.build(g_nodes[i].Pos, g_nodes[i].Plane.n);
 		}
 

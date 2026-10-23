@@ -5,6 +5,9 @@ class CToastNotify
 public:
 	static CToastNotify& Instance();
 
+	// A console run reports in the log only: a modal box would wait for a click forever.
+	void SetSilent(bool bSilent) { Silent = bSilent; }
+
 	bool Initialize();
 	void Shutdown();
 	bool IsInitialized() const { return Initialized; }
@@ -29,5 +32,6 @@ private:
 #endif
 
 	bool Initialized = false;
+	bool Silent = false;
 	std::wstring Aumi;
 };

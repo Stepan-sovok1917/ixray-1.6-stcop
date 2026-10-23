@@ -317,6 +317,7 @@ void CGameSpawnConstructor::process_actor			(const char* start_level_name)
 
 void clear_temp_folder	()
 {
+#if defined(IXR_WINDOWS)
 	string_path		query;
 	FS.update_path	(query,"$app_data_root$","temp\\*.*");
 	_finddata_t		file;
@@ -335,6 +336,24 @@ void clear_temp_folder	()
     while (!_findnext(handle, &file));
 
 	_findclose		(handle);
+#else
+	// The temp folder listing is plain files, so the portable directory iterator does the job.
+	string_path		folder;
+	FS.update_path	(folder, "$app_data_root$", "temp");
+
+	typedef xr_vector<shared_str>	FILES;
+	FILES			files;
+
+	std::error_code	Ec;
+	for (const auto& Entry : std::filesystem::directory_iterator(folder, Ec))
+	{
+		if (!Entry.is_regular_file())
+			continue;
+
+		const std::string Name = Entry.path().filename().string();
+		files.push_back(Name.c_str());
+	}
+#endif
 
 	FILES::const_iterator	I = files.begin();
 	FILES::const_iterator	E = files.end();

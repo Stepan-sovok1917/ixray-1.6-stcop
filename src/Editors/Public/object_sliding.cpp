@@ -10,10 +10,12 @@
 #include "StdAfx.h"
 
 
+#if defined(IXR_WINDOWS)
 #pragma warning(push)
 #pragma warning(disable:4995)
 #include <DirectXMesh.h>
 #pragma warning(pop)
+#endif
 
 #include "../../xrCore/Mesh/object.h"
 #include "object_sliding.h"
@@ -25,6 +27,12 @@
 //void OptimiseVertexCoherencyTriList ( WORD *pwList, int iHowManyTris, u32 mode);
 void OptimiseVertexCoherencyTriList (WORD* pwList, int iHowManyTris, u32 optimize_mode)
 {
+#if !defined(IXR_WINDOWS)
+	// The reorder only improves vertex-cache coherency, so the list stays as it is.
+	(void)pwList;
+	(void)iHowManyTris;
+	(void)optimize_mode;
+#else
 	if (iHowManyTris > 0)
 	{
 		xr_vector<u32> remap(iHowManyTris);
@@ -47,6 +55,7 @@ void OptimiseVertexCoherencyTriList (WORD* pwList, int iHowManyTris, u32 optimiz
 			pwList[it * 3 + 2] = tmp[remap[it] * 3 + 2];
 		}
 	}
+#endif
 }
 
 bool CalculateSW(Object* object, VIPM_Result* result, u32 optimize_vertex_order)

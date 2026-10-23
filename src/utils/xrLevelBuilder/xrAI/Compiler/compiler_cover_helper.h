@@ -50,7 +50,7 @@ namespace CoverBuilder
 		Fbox2					box;
 		Fvector2				identity, start, dest, dir;
 
-		identity.x = identity.y = g_params.fPatchSize * .5f;
+		identity.x = identity.y = g_ai_params.fPatchSize * .5f;
 		const Fvector& start_position = g_nodes[start_vertex_id].Pos;
 		start = Fvector2().set(start_position.x, start_position.z);
 		dest.set(finish_position.x, finish_position.z);

@@ -97,7 +97,7 @@ using Lights_it = Lights::iterator;
 
 // data
 extern	Nodes				g_nodes;
-extern	SAIParams			g_params;
+extern	SAIParams			g_ai_params;
 
 struct b_BuildTexture : public b_texture
 {
@@ -158,7 +158,7 @@ struct CNodePositionCompressor {
 
 IC CNodePositionCompressor::CNodePositionCompressor(NodePosition& Pdest, Fvector& Psrc, hdrNODES& H)
 {
-	float sp = 1 / g_params.fPatchSize;
+	float sp = 1 / g_ai_params.fPatchSize;
 	int row_length = iFloor((H.aabb.max.z - H.aabb.min.z) / H.size + EPS_L + 1.5f);
 	int pxz = iFloor((Psrc.x - H.aabb.min.x) * sp + EPS_L + .5f) * row_length + iFloor((Psrc.z - H.aabb.min.z) * sp + EPS_L + .5f);
 	int py = iFloor(65535.f * (Psrc.y - H.aabb.min.y) / (H.size_y) + EPS_L);
