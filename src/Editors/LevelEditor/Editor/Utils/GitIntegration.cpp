@@ -790,8 +790,11 @@ CGitIntegration::SExecResult CGitIntegration::Execute(const xr_string& Arguments
 	xr_string CommandLine;
 	if (!WorkDir.empty())
 	{
+		// The shell expects POSIX separators; the editor keeps Windows-style paths.
+		xr_string ShellDir = WorkDir;
+		std::replace(ShellDir.begin(), ShellDir.end(), '\\', '/');
 		CommandLine = "cd \"";
-		CommandLine += WorkDir;
+		CommandLine += ShellDir;
 		CommandLine += "\" && ";
 	}
 
@@ -1137,7 +1140,7 @@ void CGitIntegration::UpdateBranchesAndRemotes()
 	};
 
 	SExecResult RemotesResult = Execute("remote", WorkDir);
-	SExecResult BranchesResult = Execute("branch --format=%(refname:short)", WorkDir);
+	SExecResult BranchesResult = Execute("branch --format=\"%(refname:short)\"", WorkDir);
 
 	xr_vector<xr_string> NewRemotes;
 	xr_vector<xr_string> NewBranches;
