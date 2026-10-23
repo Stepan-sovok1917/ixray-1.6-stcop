@@ -252,7 +252,24 @@ bool EFS_Utils::GetOpenNameInternal(const char* initial, LPSTR buffer, int sz_bu
 	const SDL_DialogFileFilter Filter = {"Files", Pattern.c_str()};
 
 	SFileDialogAnswer Answer;
-	const char* DefaultLocation = (offset && offset[0]) ? offset : P.m_Path;
+	// The engine keeps its paths in the Windows form ("rawdata\levels\"), which the system
+	// dialog does not understand, and a directory that does not exist makes it close at once.
+	xr_string DefaultLocationStorage = (offset && offset[0]) ? offset : P.m_Path;
+
+	for (char& Ch : DefaultLocationStorage)
+	{
+		if (Ch == '\\')
+		{
+			Ch = '/';
+		}
+	}
+
+	while (!DefaultLocationStorage.empty() && DefaultLocationStorage.back() == '/')
+	{
+		DefaultLocationStorage.pop_back();
+	}
+
+	const char* DefaultLocation = FS.path_exist(DefaultLocationStorage.c_str()) ? DefaultLocationStorage.c_str() : nullptr;
 
 	SDL_ShowOpenFileDialog(FileDialogCallback, &Answer, g_AppInfo.Window, &Filter, 1, DefaultLocation, bMulti);
 	WaitForFileDialog(Answer);
