@@ -30,7 +30,8 @@ if (NOT WIN32)
 	list(FILTER XRHI_SRC_FILES EXCLUDE REGEX ".*AMDGPUTransferee.*")
 	list(FILTER XRHI_SRC_FILES EXCLUDE REGEX ".*NvGPUTransferee.*")
 	list(FILTER XRHI_SRC_FILES EXCLUDE REGEX ".*IntelGPUTransferee.*")
-	list(FILTER XRHI_SRC_FILES EXCLUDE REGEX "imgui_impl_dx11\\.cpp$")
+	# The ImGui D3D11 renderer backend works on every platform that has a D3D11 device,
+	# which includes DXMT on macOS, so it is not excluded here.
 endif()
 
 # xrRHI project
@@ -51,6 +52,10 @@ if(APPLE)
     target_include_directories(xrRHI PUBLIC ${DXMT_INCLUDE_DIRS})
     target_compile_definitions(xrRHI PRIVATE XR_USE_NATIVE_D3D11=1)
     target_link_libraries(xrRHI PUBLIC ${DXMT_LIBRARIES})
+    # The ImGui D3D11 backend compiles its shaders with D3DCompile, which vkd3d provides.
+    if (VKD3D_LIBRARIES)
+        target_link_libraries(xrRHI PRIVATE ${VKD3D_LIBRARIES})
+    endif()
     target_link_libraries(xrRHI PRIVATE "-framework Cocoa" "-framework Metal" "-framework QuartzCore")
 elseif(UNIX AND NOT APPLE)
     target_include_directories(xrRHI PUBLIC ${DXVK_INCLUDE_DIRS})
