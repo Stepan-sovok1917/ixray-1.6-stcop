@@ -4,8 +4,10 @@
 
 void CRenderTarget::PhaseGammaApply(IRHIRenderTargetView* Destination)
 {
-	float w = float(Device.TargetWidth);
-	float h = float(Device.TargetHeight);
+	// The editor presents into the window, which is larger than the viewport canvas,
+	// so the quad has to cover the whole swap chain.
+	float w = Destination ? float(Device.GetSwapchainWidth()) : float(Device.TargetWidth);
+	float h = Destination ? float(Device.GetSwapchainHeight()) : float(Device.TargetHeight);
 
 	auto color_grading = dxRenderDeviceRender::Instance().m_Gamma.cBalance;
 

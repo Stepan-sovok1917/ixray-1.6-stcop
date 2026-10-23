@@ -143,6 +143,8 @@ void CEditorRenderDevice::Initialize()
 	
 	SDL_ShowWindow(g_AppInfo.Window);
 	SDL_RaiseWindow(g_AppInfo.Window);
+	// The editor is a full-screen tool, so the window starts maximised.
+	SDL_MaximizeWindow(g_AppInfo.Window);
 	
 
 	if (psDeviceFlags.test(mtSound))

@@ -94,7 +94,11 @@ void XrUIManager::Initialize(HWND hWnd, const char* ini_path)
 	}
 
 	io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
+	// Detached panels need a second swap chain per window, which the D3D11 layer builds from
+	// the platform window handle; outside Windows the panels stay inside the main window.
+#if defined(IXR_WINDOWS)
 	io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;
+#endif
 
 	static const ImWchar icons_ranges[] = { ICON_MIN_FA, ICON_MAX_FA, 0 };
 	ImFontConfig icons_config = {};

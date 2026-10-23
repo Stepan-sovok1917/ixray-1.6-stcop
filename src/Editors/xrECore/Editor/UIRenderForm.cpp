@@ -221,7 +221,8 @@ void UIRenderForm::DrawVP()
 
 		if (canvas_size.x < 32.0f * ScreenDPI) canvas_size.x = 32.0f * ScreenDPI;
 		if (canvas_size.y < 32.0f * ScreenDPI) canvas_size.y = 32.0f * ScreenDPI;
-		EContext.UI->Views[ViewportID].RTSize.set(canvas_size.x, canvas_size.y);
+		// The interface is laid out in points, the render targets live in pixels.
+		EContext.UI->Views[ViewportID].RTSize.set(canvas_size.x * ScreenDPI, canvas_size.y * ScreenDPI);
 
 		ImGui::SetCursorScreenPos(canvas_pos);
 		draw_list->AddImage(EContext.UI->Views[ViewportID].RTFreez->pTexture->get_SRView()->GetRawSRV(), canvas_pos, ImVec2(canvas_pos.x + canvas_size.x, canvas_pos.y + canvas_size.y));
