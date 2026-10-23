@@ -42,3 +42,25 @@ namespace ImGui
 #	undef NULL
 #	define NULL nullptr
 #endif
+
+// The cursor helpers are spelled the Windows way in the editor sources; this is their SDL version.
+#include <SDL3/SDL.h>
+
+inline int GetCursorPos(void* point)
+{
+	float x = 0.0f, y = 0.0f;
+	SDL_GetGlobalMouseState(&x, &y);
+	// POINT is { int32_t x; int32_t y; } in the compatibility headers; kept type-agnostic here
+	// because the shared header is parsed before those definitions exist.
+	struct LocalPoint { int32_t x; int32_t y; };
+	LocalPoint* cursor = static_cast<LocalPoint*>(point);
+	cursor->x = (int32_t)x;
+	cursor->y = (int32_t)y;
+	return 1;
+}
+
+inline int SetCursorPos(int x, int y)
+{
+	SDL_WarpMouseGlobal((float)x, (float)y);
+	return 1;
+}

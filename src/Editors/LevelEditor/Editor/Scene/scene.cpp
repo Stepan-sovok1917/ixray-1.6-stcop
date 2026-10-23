@@ -244,7 +244,7 @@ void EScene::OnFrame( float dT )
 				pInput->unacquire();
 				pInput->KeyboardButtonUpdate(SDL_SCANCODE_LALT, false);
 				EContext.UI->IsEnableInput = true;
-				ShowCursor(true);
+				SDL_ShowCursor();
 			}
 		}
 	}
@@ -254,7 +254,7 @@ void EScene::OnFrame( float dT )
 		m_RTFlags.set(flIsStopPlayInEditor, false);
 		if(IsPlayInEditor())
 		{
-			ShowCursor(true);
+			SDL_ShowCursor();
 			pInput->unacquire();
 			SDL_WarpMouseInWindow(g_AppInfo.Window, 
 			Device.TargetWidth / 2, Device.TargetHeight / 2);
@@ -782,7 +782,7 @@ void EScene::Play()
 
 	Device.seqFrameMT.Add(this);
 
-	ShowCursor(false);
+	SDL_HideCursor();
 }
 
 bool EScene::IsPlayInEditor()

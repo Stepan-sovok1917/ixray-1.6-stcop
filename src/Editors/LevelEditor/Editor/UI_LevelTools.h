@@ -13,8 +13,8 @@ class CLevelTool: public CToolCustom
 {
 	typedef CToolCustom inherited;
 
-	PROCESS_INFORMATION m_CompilerProcess = {};
-	PROCESS_INFORMATION m_GameProcess = {};
+	Platform::Process	m_CompilerProcess;
+	Platform::Process	m_GameProcess;
 	UIToolCustom*           m_ToolForm;
 	int             sub_target;
 	ObjClassID		target;

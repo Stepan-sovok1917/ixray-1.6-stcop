@@ -73,6 +73,6 @@ target_link_libraries(LevelEditor PRIVATE Ogg::ogg)
 target_include_directories(LevelEditor PRIVATE "${SND_OGG}/native/include/")
 
 ## Vorbis
-target_link_libraries(LevelEditor PRIVATE ${SND_VOB}/native/lib/${CMAKE_VS_PLATFORM_NAME}/Release/libvorbisfile.lib)
-target_link_libraries(LevelEditor PRIVATE ${SND_VOB}/native/lib/${CMAKE_VS_PLATFORM_NAME}/Release/libvorbis.lib)
+target_link_libraries(LevelEditor PRIVATE Vorbis::vorbisfile)
+target_link_libraries(LevelEditor PRIVATE Vorbis::vorbis)
 target_include_directories(LevelEditor PRIVATE "${SND_VOB}/native/include/")

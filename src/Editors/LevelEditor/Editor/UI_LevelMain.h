@@ -93,7 +93,9 @@ public:
 
 public:
 	CLevelMain();
-	virtual ~CLevelMain();
+	// tbb::task_group has a throwing destructor on some platforms, which would make this
+	// destructor less strict than the one it overrides.
+	virtual ~CLevelMain() noexcept;
 
 	virtual char* GetCaption() override;
 	virtual void ResetStatus() override;

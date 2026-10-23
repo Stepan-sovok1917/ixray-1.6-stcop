@@ -23,11 +23,6 @@ void SSceneSummary::Prepare()
     }
 }
 
-xr_string _itoa(int val)
-{
-	string64 	tmp; 
-    return 		itoa(val,tmp,10);
-}
 void SSceneSummary::SObjectInfo::Prepare()
 {
 	bReady					= true;
@@ -37,7 +32,7 @@ void SSceneSummary::SObjectInfo::Prepare()
         if (O){
         	SPairInfo 		tmp;
             tmp.first		= pref+"\\References"; 			
-            tmp.second 		= _itoa(ref_count);					
+            tmp.second 		= std::to_string(ref_count).c_str();					
             info.push_back	(tmp);
             tmp.first		= pref+"\\Geometry\\Faces"; 	tmp.second = _itoa(O->GetFaceCount());			info.push_back	(tmp);
             tmp.first		= pref+"\\Geometry\\Vertices"; 	tmp.second = _itoa(O->GetVertexCount());		info.push_back	(tmp);

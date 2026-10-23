@@ -8,6 +8,8 @@
 
 #include "MutexHandle.h"
 
+#include "Process.h"
+
 #define ENTRY_ARGS HINSTANCE hInstance, HINSTANCE hPrevInstance, char* lpCmdLine, int nCmdShow
 #define ENTRY_ARGS_PUSH hInstance, hPrevInstance, lpCmdLine, nCmdShow
 #define ENTRY_FUNCTION APIENTRY WinMain

@@ -6,6 +6,7 @@
 //	Description : Level spawn constructor
 ////////////////////////////////////////////////////////////////////////////
 
+#include <thread>
 #include "stdafx.h"
 #include "level_spawn_constructor.h"
 #include "game_level_cross_table.h"
@@ -485,19 +486,18 @@ void CLevelSpawnConstructor::generate_artefact_spawn_positions()
 	Msg("Generate artefact spawn positions ...");
 	size_t CountThread = std::min((size_t)CPU::ID().n_threads, m_spawns.size());
 	m_generate_artefact_spawn_positions_worker_counter = m_spawns.size();
-	xr_vector<HANDLE> Threads;
+	// Plain threads: the Win32 thread handle never existed outside Windows.
+	std::vector<std::thread> Threads;
 	Msg("* create workers %d", CountThread);
 	for (size_t i = 0; i < CountThread; i++)
 	{
-		string_path Name;
-		xr_sprintf(Name, "GenerateArtefactSpawnPositionWorker_%d", i);
-		Threads.push_back(thread_spawn(&CLevelSpawnConstructor::ThreadGenerateArtefactSpawnPositionStartup, Name, 0,
-		                               this));
+		Threads.emplace_back(&CLevelSpawnConstructor::ThreadGenerateArtefactSpawnPositionStartup, this);
 	}
 
-	for (HANDLE& i : Threads)
+	for (std::thread& worker : Threads)
 	{
-		WaitForSingleObject(i, INFINITE);
+		if (worker.joinable())
+			worker.join();
 	}
 
 

@@ -6,6 +6,7 @@
 //	Description : Game spawn constructor
 ////////////////////////////////////////////////////////////////////////////
 
+#include <filesystem>
 #include "stdafx.h"
 #include "game_spawn_constructor.h"
 #include "level_spawn_constructor.h"
@@ -481,31 +482,20 @@ bool CGameSpawnConstructor::build(const char* name, CMemoryWriter& output, const
 
 void clear_temp_folder	()
 {
-	string_path		query;
-	FS.update_path	(query,"$app_data_root$","temp\\*.*");
-	_finddata_t		file;
-	intptr_t		handle = _findfirst(query, &file);
-	if (handle == intptr_t(-1))
-		return;
+	// The Win32 find API has no portable counterpart; std::filesystem does the same job.
+	string_path temp_folder;
+	FS.update_path(temp_folder, "$app_data_root$", "temp/");
 
-	typedef xr_vector<shared_str>	FILES;
-	FILES			files;
-	do {
-		if (file.attrib & _A_SUBDIR)
+	std::error_code ec;
+	for (const std::filesystem::directory_entry& entry : std::filesystem::directory_iterator(temp_folder, ec))
+	{
+		if (!entry.is_regular_file(ec))
 			continue;
 
-		files.push_back		(file.name);
-	}
-    while (!_findnext(handle, &file));
-
-	_findclose		(handle);
-
-	FILES::const_iterator	I = files.begin();
-	FILES::const_iterator	E = files.end();
-	for ( ; I != E; ++I) {
-		if (DeleteFileA(**I))
-			Msg		("file %s is successfully deleted",**I);
+		const std::string file_name = entry.path().string();
+		if (std::filesystem::remove(entry.path(), ec))
+			Msg("file %s is successfully deleted", file_name.c_str());
 		else
-			Msg		("cannot delete file %s",**I);
+			Msg("cannot delete file %s", file_name.c_str());
 	}
 }

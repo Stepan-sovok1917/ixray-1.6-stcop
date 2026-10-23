@@ -23,7 +23,11 @@ void EScene::UndoSave()
 	if (0==EPrefs->scene_undo_level) return;
 
 	UndoItem item;
-	GetTempFileNameA( FS.get_path(_temp_)->m_Path, "undo", 0, item.m_FileName );
+	// A unique name in the editor temp folder; GetTempFileName exists only on Windows.
+	static u32 UndoSerial = 0;
+	string_path TempFolder;
+	FS.update_path(TempFolder, _temp_, "");
+	xr_sprintf(item.m_FileName, "%sundo_%08u_%u.tmp", TempFolder, (u32)std::time(nullptr), ++UndoSerial);
 
 	Save( item.m_FileName, true, true );
 	m_UndoStack.push_back( item );

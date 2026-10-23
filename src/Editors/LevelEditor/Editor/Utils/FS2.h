@@ -135,11 +135,13 @@ public:
 	void	clear	()  { file_size=0; position=0;	}
 	void	SaveTo	(const char* fn)
 	{
-        int H = _open(fn,O_WRONLY|O_CREAT|O_TRUNC|O_BINARY,S_IREAD|S_IWRITE);
+		FILE* file = fopen(fn, "wb");
+		R_ASSERT(file != nullptr);
+		if (file == nullptr)
+			return;
 
-        R_ASSERT(H>0);
-        _write(H,pointer(),size());
-        _close(H);
+		fwrite(pointer(), 1, size(), file);
+		fclose(file);
 	}
 };
 

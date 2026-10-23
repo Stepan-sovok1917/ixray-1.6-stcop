@@ -1162,72 +1162,44 @@ struct SceneClipData {
 };
 #pragma pack(pop)
 
-void EScene::CopySelection( ObjClassID classfilter )
+// The scene clipboard is a pair of a class filter and a file with the selection. Windows kept
+// it in the system clipboard, which only ever worked inside the editor; a process-local copy
+// behaves the same and needs no platform API.
+static SceneClipData g_scene_clipboard = {};
+static bool g_scene_clipboard_valid = false;
+
+static void make_clipboard_file_name(char* out)
 {
-	HGLOBAL hmem = GlobalAlloc(GMEM_MOVEABLE|GMEM_DDESHARE, sizeof(SceneClipData) );
-	SceneClipData *sceneclipdata = (SceneClipData *)GlobalLock(hmem);
-
-	sceneclipdata->m_ClassFilter = classfilter;
-	GetTempFileNameA( FS.get_path(_temp_)->m_Path, "clip", 0, sceneclipdata->m_FileName );
-	SaveSelection( classfilter, sceneclipdata->m_FileName );
-
-	GlobalUnlock( hmem );
-
-	int clipformat = RegisterClipboardFormatA( "CF_XRAY_CLASS_LIST" );
-	if( OpenClipboard( 0 ) ){
-		SetClipboardData( clipformat, hmem );
-		CloseClipboard();
-	} else {
-		ELog.DlgMsg( mtError, "Failed to open clipboard" );
-		GlobalFree( hmem );
-	}
+	static u32 ClipboardSerial = 0;
+	string_path temp_folder;
+	FS.update_path(temp_folder, _temp_, "");
+	xr_sprintf(out, MAX_PATH, "%sclip_%08u_%u.tmp", temp_folder, (u32)std::time(nullptr), ++ClipboardSerial);
 }
 
-void EScene::PasteSelection() 
+void EScene::CopySelection( ObjClassID classfilter )
 {
-	int clipformat = RegisterClipboardFormatA( "CF_XRAY_CLASS_LIST" );
-	if( OpenClipboard( 0 ) ){
+	g_scene_clipboard.m_ClassFilter = classfilter;
+	make_clipboard_file_name(g_scene_clipboard.m_FileName);
+	SaveSelection( classfilter, g_scene_clipboard.m_FileName );
+	g_scene_clipboard_valid = true;
+}
 
-		HGLOBAL hmem = GetClipboardData(clipformat);
-		if( hmem ){
-			SceneClipData *sceneclipdata = (SceneClipData *)GlobalLock(hmem);
-			LoadSelection( sceneclipdata->m_FileName );
-			GlobalUnlock( hmem );
-		} else {
-			ELog.DlgMsg( mtError, "No data in clipboard" );
-		}
-
-		CloseClipboard();
-
-	} else {
-		ELog.DlgMsg( mtError, "Failed to open clipboard" );
+void EScene::PasteSelection()
+{
+	if( !g_scene_clipboard_valid ){
+		ELog.DlgMsg( mtError, "No data in clipboard" );
+		return;
 	}
+	LoadSelection( g_scene_clipboard.m_FileName );
 }
 
 void EScene::DuplicateSelection(ObjClassID classfilter)
 {
-	HGLOBAL hmem = GlobalAlloc(GMEM_MOVEABLE|GMEM_DDESHARE, sizeof(SceneClipData) );
-	SceneClipData *sceneclipdata = (SceneClipData *)GlobalLock(hmem);
-
-	sceneclipdata->m_ClassFilter = classfilter;
-	GetTempFileNameA( FS.get_path(_temp_)->m_Path, "clip", 0, sceneclipdata->m_FileName );
-	SaveSelection( classfilter, sceneclipdata->m_FileName );
-
-	if( OpenClipboard( 0 ) ){
-
-		if( hmem ){
-			SceneClipData *sceneclipdata = (SceneClipData *)GlobalLock(hmem);
-			LoadSelection( sceneclipdata->m_FileName );
-			GlobalUnlock( hmem );
-		} else {
-			ELog.DlgMsg( mtError, "No data in clipboard" );
-		}
-
-		CloseClipboard();
-
-	} else {
-		ELog.DlgMsg( mtError, "Failed to open clipboard" );
-	}
+	g_scene_clipboard.m_ClassFilter = classfilter;
+	make_clipboard_file_name(g_scene_clipboard.m_FileName);
+	SaveSelection( classfilter, g_scene_clipboard.m_FileName );
+	LoadSelection( g_scene_clipboard.m_FileName );
+	g_scene_clipboard_valid = true;
 }
 
 void EScene::CutSelection( ObjClassID classfilter )
