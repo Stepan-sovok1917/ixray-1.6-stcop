@@ -67,11 +67,13 @@ void XrUIManager::Initialize(HWND hWnd, const char* ini_path)
 	m_ScaleDpi = GetDeviceCaps(screen, LOGPIXELSX) / 96.f;
 	ReleaseDC(nullptr, screen);
 #else
-	m_ScaleDpi = SDL_GetWindowDisplayScale(g_AppInfo.Window);
+	// The renderer already draws the interface at the display density, so the layout and the
+	// fonts stay in logical points instead of being scaled a second time.
+	m_ScaleDpi = 1.0f;
 #endif
 	ImGui::GetStyle().ScaleAllSizes(m_ScaleDpi);
-	io.ConfigDpiScaleFonts = true;
-	io.ConfigDpiScaleViewports = true;
+	io.ConfigDpiScaleFonts = false;
+	io.ConfigDpiScaleViewports = false;
 
 	CUIThemeManager::Get().InitDefault();
 	Push(&CUIThemeManager::Get(), false);
