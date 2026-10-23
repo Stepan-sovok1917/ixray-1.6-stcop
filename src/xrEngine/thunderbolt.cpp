@@ -57,18 +57,27 @@ void SThunderboltDesc::load						(CInifile& pIni, shared_str const& sect)
 	name						= sect;
 	color_anim					= LALib.FindItem (pIni.r_string ( sect,"color_anim" ));
 	VERIFY						(color_anim);
+	// A weather config without the animation leaves the thunderbolt empty instead of
+	// dereferencing the lookup result.
+	if (color_anim == nullptr)
+	{
+		Msg("! Thunderbolt '%s' has no color_anim", sect.c_str());
+		return;
+	}
 	color_anim->fFPS			= (float)color_anim->iFrameCount;
 
     // models
     const char* m_name = pIni.r_string(sect, "lightning_model");
-    string_path tmp;
-    xr_strcpy(tmp, m_name);
-    m_pRender->CreateModel(tmp);
+    string_path tmp = "";
+    if (m_name && m_name[0])
+    {
+        xr_strcpy(tmp, m_name);
+        m_pRender->CreateModel(tmp);
+    }
     // sound
     m_name = pIni.r_string(sect, "sound");
-    xr_strcpy(tmp, m_name);
     if (m_name && m_name[0])
-        snd.create(tmp, st_Effect, sg_Undefined);
+        snd.create(m_name, st_Effect, sg_Undefined);
 }
 
 //----------------------------------------------------------------------------------------------

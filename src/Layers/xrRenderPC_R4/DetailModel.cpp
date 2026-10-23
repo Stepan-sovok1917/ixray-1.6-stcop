@@ -190,6 +190,11 @@ void CDetail::LoadGeom()
 
 void CDetail::Load(IReader* S)
 {
+	// The detail model is optional: a content set without the file leaves it empty instead
+	// of dereferencing a missing reader.
+	if (S == nullptr)
+		return;
+
 	// Shader
 	string256 fnT, fnS;
 

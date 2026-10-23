@@ -618,6 +618,9 @@ void CRender::model_Delete(IRender_DetailModel*& F) {
 IRenderVisual* CRender::model_CreatePE(const char* name) {
 	PS::CPEDef* SE = PSLibrary.FindPED(name);
 	R_ASSERT3(SE, "Particle effect doesn't exist", name);
+	// A content set without the effect must not build an object from a null definition.
+	if (SE == nullptr)
+		return nullptr;
 	return Models->CreatePE(SE);
 }
 
@@ -629,6 +632,8 @@ IRenderVisual* CRender::model_CreateParticles(const char* name) {
 	else {
 		PS::CPGDef* SG = PSLibrary.FindPGD(name);
 		R_ASSERT3(SG, "Particle effect or group doesn't exist", name);
+		if (SG == nullptr)
+			return nullptr;
 		return Models->CreatePG(SG);
 	}
 }
