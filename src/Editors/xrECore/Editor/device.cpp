@@ -616,10 +616,7 @@ void CEditorRenderDevice::CreateWindow()
 	int DisplayX = DesktopMode ? DesktopMode->w : 1280;
 	int DisplayY = DesktopMode ? DesktopMode->h : 720;
 
-	// On a Retina display the window is backed by a framebuffer with twice the density; without
-	// this flag SDL reports the logical size and the interface is drawn into a quarter of it.
-	g_AppInfo.Window = SDL_CreateWindow("IX-Ray Editor", DisplayX, DisplayY,
-		SDL_WINDOW_HIDDEN | SDL_WINDOW_RESIZABLE | SDL_WINDOW_HIGH_PIXEL_DENSITY);
+	g_AppInfo.Window = SDL_CreateWindow("IX-Ray Editor", DisplayX, DisplayY, SDL_WINDOW_HIDDEN | SDL_WINDOW_RESIZABLE);
 	SDL_ShowWindow(g_AppInfo.Window);
 	SDL_RaiseWindow(g_AppInfo.Window);
 
