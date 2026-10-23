@@ -1406,11 +1406,23 @@ int UIMinimapEditorForm::LoadTexture(Element& el, const xr_string texture)
 	RHISubResource subResource = {};
 
 	IRHISurface* surf = GRHI->CreateTexture2D(textureDesc, subResource);
+	if (surf == nullptr)
+	{
+		// No device yet or the image is too large.
+		Msg("! Minimap: cannot create a texture for '%s'", fn.c_str());
+		return 3;
+	}
+
 	el.Texture = new CTexture();
 	el.Texture->surface_set(surf);
 
 	u32 Pitch = 0;
 	void* pBits = surf->Lock(0, &Pitch);
+	if (pBits == nullptr)
+	{
+		surf->Release();
+		return 3;
+	}
 
 	for (int i = 0; i < H; i++)
 	{
@@ -1477,12 +1489,22 @@ void UIMinimapEditorForm::LoadBGClick(const xr_string texture)
 		RHISubResource SubResource = {};
 
 		IRHISurface* Surf = GRHI->CreateTexture2D(textureDesc, SubResource);
+		if (Surf == nullptr)
+		{
+			// No device yet or the texture is too large: there is nothing to show.
+			Msg("! Minimap: cannot create the background texture");
+			return;
+		}
 		BackgroundTexture = new CTexture;
 		BackgroundTexture->surface_set(Surf);
 		Surf->Release();
 
 		u32 Pitch = 0;
 		void* pBits = Surf->Lock(0, &Pitch);
+		if (pBits == nullptr)
+		{
+			return;
+		}
 		for (int i = 0; i < ImageH; i++)
 		{
 			unsigned char* dest = static_cast<unsigned char*>(pBits) + (Pitch * i);
