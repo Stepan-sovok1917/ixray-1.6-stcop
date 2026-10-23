@@ -11,11 +11,23 @@ extern "C"
 
 XrGameManager::XrGameManager()
 {
+	// The game module is a shared library outside Windows.
+#if defined(IXR_WINDOWS)
 	const char*			g_name = "xrGame.dll";
+#elif defined(IXR_APPLE_SERIES)
+	const char*			g_name = "libxrGame.dylib";
+#else
+	const char*			g_name = "libxrGame.so";
+#endif
 	Log("Loading DLL:", g_name);
 	m_hGame = LoadLibraryA(g_name);
 	if (0 == m_hGame)	R_CHK(GetLastError());
 	R_ASSERT2(m_hGame, "Game DLL raised exception during loading or there is no game DLL at all");
+	if (!m_hGame)
+	{
+		Msg("! Game module %s could not be loaded", g_name);
+		return;
+	}
 	m_pCreate = (Factory_Create*)GetProcAddress(m_hGame, "xrFactory_Create");	R_ASSERT(m_pCreate);
 	m_pCreateFromSection = (ISE_Abstract * (__cdecl * )(const char*))GetProcAddress(m_hGame, "xrFactory_Create_From_Section");	R_ASSERT(m_pCreate);
 	m_pDestroy = (Factory_Destroy*)GetProcAddress(m_hGame, "xrFactory_Destroy");	R_ASSERT(m_pCreate);

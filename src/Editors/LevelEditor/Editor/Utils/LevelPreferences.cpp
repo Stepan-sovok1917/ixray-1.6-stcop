@@ -102,7 +102,7 @@ void CLevelPreferences::Load()
 		GetSafe(*lod, "DisableBillboardLOD", DisableBillboardLOD);
 	}
 
-	if (const auto* cb = GetObjectSafe(JSONData, "ContentBrowser"))
+	if (const auto* cb = GetObjectSafe(JSONData, "ContentBrowser"); cb && GContentView)
 	{
 		GetSafe(*cb, "CurPath", GContentView->CurrentDir);
 
@@ -131,7 +131,7 @@ void CLevelPreferences::Load()
 		GetSafe(*gizmo, "matrixmode", imManipulator.MatrixMode);
 	}
 
-	if (const auto* targets = GetObjectSafe(JSONData, "targets"))
+	if (const auto* targets = GetObjectSafe(JSONData, "targets"); targets && Scene)
 	{
 		for (auto it = Scene->FirstTool(); it != Scene->LastTool(); ++it)
 		{
@@ -140,15 +140,21 @@ void CLevelPreferences::Load()
 				continue;
 			}
 
-			u32 flags;
-			if (GetSafe(*targets, it->second->ClassName(), flags))
+			const char* ClassName = it->second->ClassName();
+			if (!ClassName || !ClassName[0])
+			{
+				continue;
+			}
+
+			u32 flags = 0;
+			if (GetSafe(*targets, ClassName, flags))
 			{
 				it->second->m_EditFlags.flags = flags;
 			}
 		}
 	}
 
-	if (const auto* scene = GetObjectSafe(JSONData, "Scene"))
+	if (const auto* scene = GetObjectSafe(JSONData, "Scene"); scene && Scene)
 	{
 		GetSafe(*scene, "ValidNames", Scene->IsValidateDublicateNames);
 		GetSafe(*scene, "ValidLod", Scene->IsValidateLODs);
@@ -182,20 +188,32 @@ void CLevelPreferences::Save()
 	JSONData["ExperimentalLOD"]["UseMULODs"] = UseMULODs;
 	JSONData["ExperimentalLOD"]["DisableBillboardLOD"] = DisableBillboardLOD;
 
-	JSONData["ContentBrowser"]["CurPath"] = GContentView->CurrentDir;
-	JSONData["ContentBrowser"]["ISEPath"] = GContentView->VirtualPath;
-	JSONData["ContentBrowser"]["IsSpawnElement"] = GContentView->IsSpawnElement;
-	JSONData["ContentBrowser"]["ViewMode"] = GContentView->ViewMode;
-	JSONData["Scene"]["ValidMake"] = Scene->IsValidateAtMake;
-	JSONData["Scene"]["ValidLod"] = Scene->IsValidateLODs;
-	JSONData["Scene"]["ValidNames"] = Scene->IsValidateDublicateNames;
-	JSONData["Scene"]["AIMapDefaultLegacy"] = Scene->IsAIMapDefaultLegacy;
+	// The preferences are saved while the editor starts, before the scene and the content
+	// browser exist, so their state is written only once they are created.
+	if (GContentView)
+	{
+		JSONData["ContentBrowser"]["CurPath"] = GContentView->CurrentDir;
+		JSONData["ContentBrowser"]["ISEPath"] = GContentView->VirtualPath;
+		JSONData["ContentBrowser"]["IsSpawnElement"] = GContentView->IsSpawnElement;
+		JSONData["ContentBrowser"]["ViewMode"] = GContentView->ViewMode;
+	}
 
-	SceneToolsMapPairIt _I 	= Scene->FirstTool();
-	SceneToolsMapPairIt _E 	= Scene->LastTool();
-	for (; _I != _E; _I++)
-		if (_I->second && (_I->first != OBJCLASS_DUMMY))
-			JSONData["targets"][_I->second->ClassName()] = _I->second->m_EditFlags.flags;
+	if (Scene)
+	{
+		JSONData["Scene"]["ValidMake"] = Scene->IsValidateAtMake;
+		JSONData["Scene"]["ValidLod"] = Scene->IsValidateLODs;
+		JSONData["Scene"]["ValidNames"] = Scene->IsValidateDublicateNames;
+		JSONData["Scene"]["AIMapDefaultLegacy"] = Scene->IsAIMapDefaultLegacy;
+
+		SceneToolsMapPairIt _I 	= Scene->FirstTool();
+		SceneToolsMapPairIt _E 	= Scene->LastTool();
+		for (; _I != _E; _I++)
+		{
+			const char* ClassName = _I->second ? _I->second->ClassName() : nullptr;
+			if (ClassName && ClassName[0] && (_I->first != OBJCLASS_DUMMY))
+				JSONData["targets"][ClassName] = _I->second->m_EditFlags.flags;
+		}
+	}
 }
 
 void CLevelPreferences::OnEnabledChange(PropValue* prop)
